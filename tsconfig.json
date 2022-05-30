@@ -1,0 +1,71 @@
+{
+	"compilerOptions": {
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"inlineSources": true,
+		"sourceRoot": "/",
+		"allowJs": true,
+		"alwaysStrict": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"lib": [
+			"dom",
+			"es2017"
+		],
+		"plugins": [
+			{
+				"name": "typescript-plugin-css-modules"
+			}
+		],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "es5",
+		"baseUrl": "./",
+		"paths": {
+			"Api/*": [
+				"src/api/*"
+			],
+			"Components/*": [
+				"src/components/*"
+			],
+			"Configs/*": [
+				"src/configs/*"
+			],
+			"Constants/*": [
+				"src/constants/*"
+			],
+			"Hooks/*": [
+				"src/hooks/*"
+			],
+			"Modules/*": [
+				"src/modules/*"
+			],
+			"Styles/*": [
+				"src/styles/*"
+			],
+			"Utils/*": [
+				"src/utils/*"
+			]
+		},
+		"incremental": true
+	},
+	"exclude": [
+		"node_modules",
+		"coverage-ts",
+		".vscode"
+	],
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		"src/configs/*.js"
+	]
+}
