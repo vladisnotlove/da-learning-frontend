@@ -2,3 +2,4 @@ node_modules
 .idea
 .next
 next-env.d.ts
+local-settings.js

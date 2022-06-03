@@ -3,13 +3,21 @@ import {createTheme} from "@mui/material";
 let theme = createTheme({
 	palette: {
 		primary: {
-			main: "#5567da"
+			main: "#4156dc"
 		},
 		text: {
 			secondary: "rgba(0,0,0,0.5)"
 		},
+		background: {
+			lower1: "rgba(164,116,110,0.1)"
+		},
+		action: {
+			hover: "rgba(7,30,101,0.04)",
+			selected: "rgba(7,30,101,0.08)"
+		}
 	},
 	typography: {
+		fontFamily: "FiraSans",
 		fontSize: 14,
 		h1: {
 			fontWeight: 500,

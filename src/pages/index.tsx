@@ -1,17 +1,8 @@
 import React from "react";
-import {Button} from "@mui/material";
+import IndexPage from "Components/@pages/IndexPage";
 
 const Index = () => {
-	return <div>
-		<Button
-			variant={"contained"}
-			onClick={() => {
-				window.alert("hello world");
-			}}
-		>
-			Click me!
-		</Button>
-	</div>;
+	return <IndexPage />;
 };
 
 export default Index;

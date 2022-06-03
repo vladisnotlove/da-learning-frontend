@@ -1,0 +1,15 @@
+{
+	"@messages": {
+		"fieldIsRequired": "Поле обязательно для заполнения",
+		"minLength_0": "Минимальная длина - 0 символов",
+		"minLength_few": "Минимальная длина - {{count}} символа",
+		"minLength_many": "Минимальная длина - {{count}} символов",
+		"minLength_one": "Минимальная длина - {{count}} символ"
+	},
+	"editor": "Редактор",
+	"login": "Войти",
+	"loginAsField": "Логин",
+	"loginAsProcess": "Вход",
+	"logout": "Выйти",
+	"password": "Пароль"
+}
