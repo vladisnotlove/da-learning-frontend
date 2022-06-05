@@ -24,11 +24,13 @@
     "react-dom": "^18.1.0",
     "react-hook-form": "^7.31.3",
     "react-query": "^3.39.1",
+    "throttle-debounce": "^5.0.0",
     "universal-cookie": "^4.0.4"
   },
   "devDependencies": {
     "@types/node": "^17.0.36",
     "@types/react": "^18.0.10",
+    "@types/throttle-debounce": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
     "eslint": "^8.16.0",

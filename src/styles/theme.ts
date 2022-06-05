@@ -9,7 +9,7 @@ let theme = createTheme({
 			secondary: "rgba(0,0,0,0.5)"
 		},
 		background: {
-			lower1: "rgba(164,116,110,0.1)"
+			lower1: "rgba(164,110,124,0.1)"
 		},
 		action: {
 			hover: "rgba(7,30,101,0.04)",
