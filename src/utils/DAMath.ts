@@ -2,11 +2,11 @@ type TEMath = typeof Math & {
 	diff: (a: number, b: number) => void
 }
 
-const EMath: TEMath = {
+const DAMath: TEMath = {
 	...Math,
 	diff: (a: number, b: number) => {
 		return Math.abs(a - b);
 	}
 };
 
-export default EMath;
+export default DAMath;

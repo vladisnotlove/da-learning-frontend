@@ -15,6 +15,7 @@ import {defaultQueryOptions} from "Configs/react-query";
 import "Styles/reset.sass";
 import "Styles/fonts.sass";
 import "Styles/global.sass";
+import "Styles/components/ColorPicker.sass";
 
 
 const clientSideEmotionCache = createEmotionCache();

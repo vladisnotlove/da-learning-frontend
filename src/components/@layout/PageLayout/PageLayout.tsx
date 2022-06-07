@@ -3,12 +3,11 @@ import React, {useEffect, useRef, useState} from "react";
 // Components
 import Logo from "Components/@common/Logo";
 import Navigation from "./Navigation";
-import DAContainer from "Components/@common/DAContainer";
 import BurgerNavigation from "Components/@layout/PageLayout/BurgerNavigation";
 import ProfileWidget from "Components/@common/ProfileWidget";
+import {styled, Container} from "@mui/material";
 
 // Stores, utils, libs
-import {styled} from "@mui/material";
 
 
 export type PageLayoutProps = {
@@ -82,14 +81,14 @@ const PageLayoutRoot = styled("div")(() => ({
 	alignItems: "stretch",
 }));
 
-const Bar = styled(DAContainer)(({theme}) => ({
+const Bar = styled(Container)(({theme}) => ({
 	display: "flex",
 	flexDirection: "row",
 	alignItems: "center",
 	gap: theme.spacing(2),
 	height: theme.spacing(6),
 
-	background: theme.palette.background.lower1,
+	background: theme.palette.background.header,
 }));
 
 const StyledLogo = styled(Logo)({
@@ -102,7 +101,9 @@ const NavigationContainer = styled("div")(() => ({
 	height: "100%",
 }));
 
-const Content = styled(DAContainer)(({theme}) => ({
+const Content = styled(Container)(({theme}) => ({
+	minHeight: 0,
+	flexGrow: 1,
 	paddingTop: theme.spacing(2),
 	paddingBottom: theme.spacing(2),
 }));

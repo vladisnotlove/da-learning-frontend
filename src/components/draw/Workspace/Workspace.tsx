@@ -4,7 +4,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {Box, BoxProps, styled} from "@mui/material";
 
 // Stores, utils, libs
-import Vector from "Utils/geometry/vector";
+import Vector from "Utils/geometry/Vector";
 import useWindowEvent from "Hooks/useWindowEvent";
 
 
@@ -28,12 +28,14 @@ const Workspace: React.FC<WorkspaceProps> = (
 		sx,
 		scaleStep = 0.1,
 		minScale = 0.25,
-		maxScale = 100,
+		maxScale = 200,
 	}
 ) => {
+	const [isHover, setIsHover] = useState(false);
 	const [isMoving, setIsMoving] = useState(false);
 	const [position, _setPosition] = useState<Vector | null>(null);
 	const [scale, setScale] = useState<number>(1);
+	const [originSize, setOriginSize] = useState<Vector | null>(null);
 
 	const setPosition = (newPosition: Vector | null, newScale?: number) => {
 		if (newPosition === null) return _setPosition(newPosition);
@@ -41,8 +43,8 @@ const Workspace: React.FC<WorkspaceProps> = (
 		const content = contentRef.current;
 		const space = spaceRef.current;
 
-		if (content && space) {
-			const contentSize = new Vector(content.clientWidth, content.clientHeight).multiply(newScale || scale);
+		if (content && space && originSize) {
+			const contentSize = originSize.multiply(newScale || scale);
 			const spaceRect = space.getBoundingClientRect();
 			const spaceSize = new Vector(spaceRect.width, spaceRect.height);
 
@@ -75,7 +77,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 	const contentRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		if (!position) {
+		if (!position && !originSize) {
 			const content = contentRef.current;
 			const space = spaceRef.current;
 
@@ -87,9 +89,10 @@ const Workspace: React.FC<WorkspaceProps> = (
 					spaceSize.x * 0.5 - contentSize.x * 0.5,
 					spaceSize.y * 0.5 - contentSize.y * 0.5
 				));
+				setOriginSize(new Vector(content.clientWidth, content.clientHeight));
 			}
 		}
-	}, [position, scale]);
+	}, [position, scale, originSize]);
 
 	useWindowEvent("mouseup", event => {
 		if (event.button === WHEEL_BUTTON) {
@@ -107,14 +110,47 @@ const Workspace: React.FC<WorkspaceProps> = (
 		}
 	});
 
+	useWindowEvent("wheel", event => {
+		if (isHover) {
+			event.preventDefault();
+			return false;
+		}
+	}, {
+		listenerOptions: {passive: false}
+	});
+
+	useWindowEvent("mousedown", event => {
+		if (isHover) {
+			event.preventDefault();
+			return false;
+		}
+	}, {
+		listenerOptions: {passive: false}
+	});
+
 	return <Space
 		ref={spaceRef}
 		className={className}
+
+		// is hover
+		onMouseMove={() => {
+			setIsHover(true);
+		}}
+		onMouseEnter={() => {
+			setIsHover(true);
+		}}
+		onMouseLeave={() => {
+			setIsHover(false);
+		}}
+
+		// move
 		onMouseDown={event => {
 			if (event.button === WHEEL_BUTTON) {
 				setIsMoving(true);
 			}
 		}}
+
+		// zoom
 		onWheel={event => {
 			const content = contentRef.current;
 			const space = spaceRef.current;
@@ -132,7 +168,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 				// set new position
 				const deltaPosition = position.subtract(mousePosition);
 				const scaledDeltaPosition = deltaPosition.multiply(1 / scale).multiply(newScale);
-				const newPosition = position.add(scaledDeltaPosition.subtract(deltaPosition).fitToMaxLength(20));
+				const newPosition = position.add(scaledDeltaPosition.subtract(deltaPosition));
 				setPosition(newPosition, newScale);
 			}
 		}}
@@ -143,8 +179,12 @@ const Workspace: React.FC<WorkspaceProps> = (
 			ready={Boolean(position)}
 			style={{
 				...(position && {
-					transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+					transform: `translate(${position.x}px, ${position.y}px)`,
 					transformOrigin: "top left"
+				}),
+				...(originSize && scale && {
+					width: originSize.x * scale,
+					height: originSize.y * scale
 				})
 			}}
 		>

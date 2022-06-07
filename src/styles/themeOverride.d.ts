@@ -17,6 +17,7 @@ declare module "@mui/material/styles/createTypography" {
 declare module "@mui/material/styles/createPalette" {
 	export interface TypeBackground {
 		lower1: string,
+		header: string,
 	}
 }
 
