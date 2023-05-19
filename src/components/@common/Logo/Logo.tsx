@@ -23,7 +23,7 @@ const Logo: React.FC<LogoProps> = (
 		<StyledText
 			className={className}
 		>
-			DI.AR.L
+			da-learning
 		</StyledText>
 	</Link>;
 };
