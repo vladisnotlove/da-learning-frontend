@@ -71,11 +71,11 @@ const NavItem = styled("div")(({theme}) => ({
 	transition: `background-color ${theme.transitions.duration.short}ms`,
 
 	"&:hover": {
-		background: theme.palette.action.hover,
+		background: `rgba(255, 255, 255, ${theme.palette.action.hoverOpacity * 2})`,
 		cursor: "pointer",
 	},
 	"&.active": {
-		background: theme.palette.action.selected,
+		background: `rgba(255, 255, 255, ${theme.palette.action.selectedOpacity * 2})`,
 	}
 }));
 

@@ -1,9 +1,8 @@
 import React, {useRef} from "react";
 
 // Components
-import {Divider, IconButton, ListItemIcon, Menu, MenuItem, styled} from "@mui/material";
+import {Button, Divider, IconButton, ListItemIcon, Menu, MenuItem, styled} from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LoginIcon from "@mui/icons-material/Login";
 import LoginForm from "Components/@common/LoginForm";
 
 // Stores, utils, libs
@@ -55,6 +54,9 @@ const ProfileWidget: React.FC<ProfileWidgetProps> = (
 					className={className}
 					onClick={openProfile}
 					attach={attach}
+					sx={(theme) => ({
+						color: theme.palette.primary.contrastText,
+					})}
 				>
 					<AccountCircleIcon />
 				</AttachableIconButton>
@@ -92,13 +94,16 @@ const ProfileWidget: React.FC<ProfileWidgetProps> = (
 		{/* Anonymous */}
 		{profile.isError &&
 			<>
-				<AttachableIconButton
+				<AttachableButton
 					className={className}
 					onClick={openLoginForm}
 					attach={attach}
+					sx={(theme) => ({
+						color: theme.palette.primary.contrastText,
+					})}
 				>
-					<LoginIcon />
-				</AttachableIconButton>
+					{t("common:login")}
+				</AttachableButton>
 				<LoginForm
 					open={isLoginFormOpen}
 					onClose={closeLoginForm}
@@ -117,6 +122,15 @@ const ProfileWidget: React.FC<ProfileWidgetProps> = (
 };
 
 const AttachableIconButton = styled(IconButton)<Pick<ProfileWidgetProps, "attach">>(({theme, attach}) => ({
+	...(attach?.includes("left") && {
+		marginLeft: theme.spacing(-1),
+	}),
+	...(attach?.includes("right") && {
+		marginRight: theme.spacing(-1),
+	})
+}));
+
+const AttachableButton = styled(Button)<Pick<ProfileWidgetProps, "attach">>(({theme, attach}) => ({
 	...(attach?.includes("left") && {
 		marginLeft: theme.spacing(-1),
 	}),

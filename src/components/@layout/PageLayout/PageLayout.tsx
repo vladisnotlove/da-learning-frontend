@@ -16,7 +16,8 @@ export type PageLayoutProps = {
 	navItems?: {
 		label: string,
 		href: string,
-	}[]
+	}[],
+	fullSizeContent?: boolean,
 }
 
 const PageLayout: React.FC<PageLayoutProps> = (
@@ -24,6 +25,7 @@ const PageLayout: React.FC<PageLayoutProps> = (
 		className,
 		navItems = [],
 		children,
+		fullSizeContent,
 	}
 ) => {
 	const [isNavigationCollapsed, setIsNavigationCollapsed] = useState(false);
@@ -48,7 +50,7 @@ const PageLayout: React.FC<PageLayoutProps> = (
 	return <PageLayoutRoot
 		className={className}
 	>
-		<Bar>
+		<Bar color={""}>
 			{isNavigationCollapsed &&
 				<BurgerNavigation
 					navItems={navItems}
@@ -68,9 +70,14 @@ const PageLayout: React.FC<PageLayoutProps> = (
 				attach={"left-right"}
 			/>
 		</Bar>
-		<Content>
-			{children}
-		</Content>
+		{fullSizeContent ?
+			<FullSizeContent>
+				{children}
+			</FullSizeContent> :
+			<Content>
+				{children}
+			</Content>
+		}
 	</PageLayoutRoot>;
 };
 
@@ -87,6 +94,7 @@ const Bar = styled(Container)(({theme}) => ({
 	alignItems: "center",
 	gap: theme.spacing(2),
 	height: theme.spacing(6),
+	color: theme.palette.primary.contrastText,
 
 	background: theme.palette.background.header,
 }));
@@ -106,6 +114,16 @@ const Content = styled(Container)(({theme}) => ({
 	flexGrow: 1,
 	paddingTop: theme.spacing(2),
 	paddingBottom: theme.spacing(2),
+}));
+
+const FullSizeContent = styled("div")(() => ({
+	flexGrow: 1,
+	display: "flex",
+	flexDirection: "column",
+
+	"&>*:first-child": {
+		flexGrow: 1,
+	}
 }));
 
 export default PageLayout;

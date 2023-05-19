@@ -12,7 +12,7 @@ import CircleSizeInput from "Components/draw/CircleSizeInput";
 
 
 
-const TToolToSmothRadius: Record<ToolPanelProps["selectedTool"], PaperProps["smoothRadius"]> = {
+const TToolToSmoothRadius: Record<ToolPanelProps["selectedTool"], PaperProps["smoothRadius"]> = {
 	pen: 0,
 	brush: 6,
 	erase: 0,
@@ -69,7 +69,7 @@ const Editor: React.FC<EditorProps> = (
 					shape: "circle",
 					radius: radius,
 				}}
-				smoothRadius={TToolToSmothRadius[selectedTool]}
+				smoothRadius={TToolToSmoothRadius[selectedTool]}
 
 				{...PaperProps}
 			/>
@@ -78,7 +78,10 @@ const Editor: React.FC<EditorProps> = (
 };
 
 const Root = styled("div")(() => ({
-	position: "relative"
+	display: "flex",
+	flexDirection: "column",
+	position: "relative",
+	height: "100%",
 }));
 
 const StyledToolPanel = styled(ToolPanel)(({theme}) => ({
@@ -98,7 +101,8 @@ const StyledCircleSizeInput = styled(CircleSizeInput)(({theme}) => ({
 
 const StyledWorkspace = styled(Workspace)(({theme}) => ({
 	width: "100%",
-	minHeight: "400px",
+	minHeight: "200px",
+	flexGrow: "1",
 	background: theme.palette.background.lower1,
 }));
 

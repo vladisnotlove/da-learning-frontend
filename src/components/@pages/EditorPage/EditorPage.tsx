@@ -9,9 +9,9 @@ import Editor from "Components/draw/Editor";
 const EditorPage = () => {
 	const navItems = useNavItems();
 
-
 	return <PageLayout
 		navItems={navItems}
+		fullSizeContent
 	>
 		<Editor />
 	</PageLayout>;
