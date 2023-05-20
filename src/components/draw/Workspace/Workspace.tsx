@@ -152,24 +152,28 @@ const Workspace: React.FC<WorkspaceProps> = (
 
 		// zoom
 		onWheel={event => {
-			const content = contentRef.current;
-			const space = spaceRef.current;
+			if (event.ctrlKey) {
+				event.preventDefault();
 
-			if (content && space && position) {
-				// set new scale
-				const newScale = scale + scale * Math.sign(event.deltaY) * -1 * scaleStep;
-				if (newScale > maxScale || newScale < minScale) return;
-				setScale(newScale);
+				const content = contentRef.current;
+				const space = spaceRef.current;
 
-				// get mouse position relative space
-				const spaceRect = space.getBoundingClientRect();
-				const mousePosition = new Vector(event.pageX, event.pageY).subtract(new Vector(spaceRect.x, spaceRect.y));
+				if (content && space && position) {
+					// set new scale
+					const newScale = scale + scale * Math.sign(event.deltaY) * -1 * scaleStep;
+					if (newScale > maxScale || newScale < minScale) return;
+					setScale(newScale);
 
-				// set new position
-				const deltaPosition = position.subtract(mousePosition);
-				const scaledDeltaPosition = deltaPosition.multiply(1 / scale).multiply(newScale);
-				const newPosition = position.add(scaledDeltaPosition.subtract(deltaPosition));
-				setPosition(newPosition, newScale);
+					// get mouse position relative space
+					const spaceRect = space.getBoundingClientRect();
+					const mousePosition = new Vector(event.pageX, event.pageY).subtract(new Vector(spaceRect.x, spaceRect.y));
+
+					// set new position
+					const deltaPosition = position.subtract(mousePosition);
+					const scaledDeltaPosition = deltaPosition.multiply(1 / scale).multiply(newScale);
+					const newPosition = position.add(scaledDeltaPosition.subtract(deltaPosition));
+					setPosition(newPosition, newScale);
+				}
 			}
 		}}
 		sx={sx}
