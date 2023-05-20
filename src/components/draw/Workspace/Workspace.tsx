@@ -6,6 +6,7 @@ import {Box, BoxProps, styled} from "@mui/material";
 // Stores, utils, libs
 import Vector from "Utils/geometry/Vector";
 import useWindowEvent from "Hooks/useWindowEvent";
+import useAnimationFrame from "Hooks/useAnimationFrame";
 
 
 
@@ -31,17 +32,19 @@ const Workspace: React.FC<WorkspaceProps> = (
 		maxScale = 200,
 	}
 ) => {
-	const [isHover, setIsHover] = useState(false);
-	const [isMoving, setIsMoving] = useState(false);
-	const [position, _setPosition] = useState<Vector | null>(null);
-	const [scale, setScale] = useState<number>(1);
-	const [originSize, setOriginSize] = useState<Vector | null>(null);
+	const [ready, setReady] = useState(false);
 
-	const setPosition = (newPosition: Vector | null, newScale?: number) => {
-		if (newPosition === null) return _setPosition(newPosition);
+	const isHoverRef = useRef(false);
+	const isMovingRef = useRef(false);
+	const positionRef = useRef<Vector | null>(null);
+	const scaleRef = useRef<number>(1);
+	const originSizeRef = useRef<Vector | null>(null);
 
+	const changePositionRef = (newPosition: Vector, newScale?: number) => {
 		const content = contentRef.current;
 		const space = spaceRef.current;
+		const originSize = originSizeRef.current;
+		const scale = scaleRef.current;
 
 		if (content && space && originSize) {
 			const contentSize = originSize.multiply(newScale || scale);
@@ -68,49 +71,72 @@ const Workspace: React.FC<WorkspaceProps> = (
 			if (right < MIN_VP) {
 				fixedNewPosition.x = MIN_VP - contentSize.x;
 			}
-			return _setPosition(fixedNewPosition);
+			return positionRef.current = fixedNewPosition;
 		}
-		return _setPosition(newPosition);
+		return positionRef.current = newPosition;
 	};
 
 	const spaceRef = useRef<HTMLDivElement | null>(null);
 	const contentRef = useRef<HTMLDivElement | null>(null);
 
+	// initial
 	useEffect(() => {
+		const position = positionRef.current;
+		const originSize = originSizeRef.current;
+		const scale = scaleRef.current;
+
 		if (!position && !originSize) {
 			const content = contentRef.current;
 			const space = spaceRef.current;
 
 			if (content && space) {
-				// save sizes
 				const spaceSize = new Vector(space.clientWidth, space.clientHeight);
 				const contentSize = new Vector(content.clientWidth, content.clientHeight).multiply(scale);
-				setPosition(new Vector(
+
+				// set position to center
+				changePositionRef(new Vector(
 					spaceSize.x * 0.5 - contentSize.x * 0.5,
 					spaceSize.y * 0.5 - contentSize.y * 0.5
 				));
-				setOriginSize(new Vector(content.clientWidth, content.clientHeight));
+
+				// save origin size
+				originSizeRef.current = new Vector(content.clientWidth, content.clientHeight);
+
+				setReady(true);
 			}
 		}
-	}, [position, scale, originSize]);
+	}, []);
 
 	useWindowEvent("mouseup", event => {
 		if (event.button === WHEEL_BUTTON) {
-			setIsMoving(false);
+			isMovingRef.current = false;
 		}
 	});
 
+	const prevMousePositionRef = useRef<Vector | null>(null);
+
 	useWindowEvent("mousemove", event => {
+		const isMoving = isMovingRef.current;
+
 		if (isMoving) {
-			const deltaMouse = new Vector(event.movementX, event.movementY);
-			setPosition(new Vector(
-				(position?.x || 0) + deltaMouse.x,
-				(position?.y || 0) + deltaMouse.y
+			const mousePosition = new Vector(event.pageX, event.pageY);
+			const prevMousePosition = prevMousePositionRef.current || Vector.from(mousePosition);
+			const deltaMouse = mousePosition.subtract(prevMousePosition);
+
+			changePositionRef(new Vector(
+				(positionRef.current?.x || 0) + deltaMouse.x,
+				(positionRef.current?.y || 0) + deltaMouse.y
 			));
+
+			prevMousePositionRef.current = mousePosition;
+		}
+		else {
+			prevMousePositionRef.current = null;
 		}
 	});
 
 	useWindowEvent("wheel", event => {
+		const isHover = isHoverRef.current;
 		if (isHover) {
 			event.preventDefault();
 			return false;
@@ -120,6 +146,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 	});
 
 	useWindowEvent("mousedown", event => {
+		const isHover = isHoverRef.current;
 		if (isHover) {
 			event.preventDefault();
 			return false;
@@ -128,25 +155,42 @@ const Workspace: React.FC<WorkspaceProps> = (
 		listenerOptions: {passive: false}
 	});
 
+	useAnimationFrame(() => {
+		const content = contentRef.current;
+		const position = positionRef.current;
+		const scale = scaleRef.current;
+		const originSize = originSizeRef.current;
+
+		if (content) {
+			if (position) {
+				content.style.transform = `translate(${position.x}px, ${position.y}px)`;
+			}
+			if (scale && originSize) {
+				content.style.width = `${originSize.x * scale}px`;
+				content.style.height = `${originSize.y * scale}px`;
+			}
+		}
+	});
+
 	return <Space
 		ref={spaceRef}
 		className={className}
 
 		// is hover
 		onMouseMove={() => {
-			setIsHover(true);
+			isHoverRef.current = true;
 		}}
 		onMouseEnter={() => {
-			setIsHover(true);
+			isHoverRef.current = true;
 		}}
 		onMouseLeave={() => {
-			setIsHover(false);
+			isHoverRef.current = false;
 		}}
 
 		// move
 		onMouseDown={event => {
 			if (event.button === WHEEL_BUTTON) {
-				setIsMoving(true);
+				isMovingRef.current = true;
 			}
 		}}
 
@@ -157,12 +201,14 @@ const Workspace: React.FC<WorkspaceProps> = (
 
 				const content = contentRef.current;
 				const space = spaceRef.current;
+				const position = positionRef.current;
+				const scale = scaleRef.current;
 
 				if (content && space && position) {
 					// set new scale
 					const newScale = scale + scale * Math.sign(event.deltaY) * -1 * scaleStep;
 					if (newScale > maxScale || newScale < minScale) return;
-					setScale(newScale);
+					scaleRef.current = newScale;
 
 					// get mouse position relative space
 					const spaceRect = space.getBoundingClientRect();
@@ -172,7 +218,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 					const deltaPosition = position.subtract(mousePosition);
 					const scaledDeltaPosition = deltaPosition.multiply(1 / scale).multiply(newScale);
 					const newPosition = position.add(scaledDeltaPosition.subtract(deltaPosition));
-					setPosition(newPosition, newScale);
+					changePositionRef(newPosition, newScale);
 				}
 			}
 		}}
@@ -180,16 +226,9 @@ const Workspace: React.FC<WorkspaceProps> = (
 	>
 		<Content
 			ref={contentRef}
-			ready={Boolean(position)}
+			ready={ready}
 			style={{
-				...(position && {
-					transform: `translate(${position.x}px, ${position.y}px)`,
-					transformOrigin: "top left"
-				}),
-				...(originSize && scale && {
-					width: originSize.x * scale,
-					height: originSize.y * scale
-				})
+				transformOrigin: "top left"
 			}}
 		>
 			{children}
