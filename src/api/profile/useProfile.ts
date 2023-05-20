@@ -3,9 +3,9 @@ import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
 import {get} from "Api/@core/methods";
 import {handleApiCatch, TApiErrors} from "Api/@core/errors";
-import TProfileModel from "Api/profile/models/ProfileModel";
+import ProfileModel from "Api/profile/models/ProfileModel";
 
-type TProfileResult = TProfileModel
+type TProfileResult = ProfileModel
 type TProfileError = TApiErrors;
 
 const useProfile = () => {
