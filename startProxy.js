@@ -1,6 +1,7 @@
 const express = require("express");
 const {createProxyMiddleware} = require("http-proxy-middleware");
 
+const PORT = 3030;
 
 const proxyToFront = createProxyMiddleware({
 	target: "http://localhost:3000",
@@ -18,5 +19,10 @@ app.use("/admin", proxyToBack);
 app.use("/static", proxyToBack);
 app.use("/", proxyToFront);
 
-app.listen("3030");
+app.listen(PORT);
+
+console.log();
+console.log("Server ready");
+console.log(`URL: http://localhost:${PORT}`);
+
 
