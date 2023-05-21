@@ -9,8 +9,10 @@ import ToolPanel, {ToolPanelProps} from "Components/draw/ToolPanel";
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
 import CircleSizeInput from "Components/draw/CircleSizeInput";
+import useToolBrushSize from "./useToolSettings";
+import useLocalStorage from "Hooks/useLocalStorage";
 
-const TToolToProps: Record<ToolPanelProps["selectedTool"], Pick<PaperProps, "mode" | "smoothRadius" | "smoothFriction" | "smoothCurve">> = {
+const TToolToConstProps: Record<ToolPanelProps["selectedTool"], Pick<PaperProps, "mode" | "smoothRadius" | "smoothFriction" | "smoothCurve">> = {
 	pen: {
 		mode: "draw",
 		smoothFriction: 0.05,
@@ -49,10 +51,10 @@ const Editor: React.FC<EditorProps> = (
 		PaperProps,
 	}
 ) => {
-	const [selectedTool, setSelectedTool] = useState<ToolPanelProps["selectedTool"]>("hand");
+	const [selectedTool, setSelectedTool] = useLocalStorage<ToolPanelProps["selectedTool"]>("selectedTool", "hand");
 
 	const [color, setColor] = useState<ToolPanelProps["color"]>(new Color({r: 0, g: 0, b: 0, a: 1}));
-	const [diameter, setDiameter] = useState<number>(2);
+	const [brushSize, setBrushSize] = useToolBrushSize(selectedTool);
 
 	return <Root
 		className={className}
@@ -65,8 +67,8 @@ const Editor: React.FC<EditorProps> = (
 		/>
 		{(selectedTool === "brush" || selectedTool === "erase" || selectedTool === "pen") &&
 			<StyledCircleSizeInput
-				radius={diameter}
-				onChangeRadius={setDiameter}
+				size={brushSize}
+				onChangeSize={setBrushSize}
 			/>
 		}
 		<StyledWorkspace>
@@ -74,16 +76,15 @@ const Editor: React.FC<EditorProps> = (
 				width={800}
 				height={600}
 
-				mode={TToolToProps[selectedTool].mode}
+				mode={TToolToConstProps[selectedTool].mode}
 				color={color}
 				brush={{
 					shape: "circle",
-					radius: diameter * 0.5,
-					blur: Math.ceil(diameter * 0.1),
+					radius: brushSize * 0.5,
 				}}
-				smoothRadius={TToolToProps[selectedTool].smoothRadius}
-				smoothFriction={TToolToProps[selectedTool].smoothFriction}
-				smoothCurve={TToolToProps[selectedTool].smoothCurve}
+				smoothRadius={TToolToConstProps[selectedTool].smoothRadius}
+				smoothFriction={TToolToConstProps[selectedTool].smoothFriction}
+				smoothCurve={TToolToConstProps[selectedTool].smoothCurve}
 
 				{...PaperProps}
 			/>

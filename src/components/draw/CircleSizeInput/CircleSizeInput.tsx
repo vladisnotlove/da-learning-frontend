@@ -1,26 +1,24 @@
 import React from "react";
 
 // Components
-import {Paper, Slider, styled} from "@mui/material";
-
-// Stores, utils, libs
+import {Paper, Slider, styled, Typography} from "@mui/material";
 
 
-const MIN_RADIUS = 0.5;
+const MIN_RADIUS = 1;
 const MAX_RADIUS = 50;
 
 type CircleSizeInputProps = {
 	className?: string,
 	children?: React.ReactNode,
-	radius: number,
-	onChangeRadius: (radius: number) => void,
+	size: number,
+	onChangeSize: (size: number) => void,
 }
 
 const CircleSizeInput: React.FC<CircleSizeInputProps> = (
 	{
 		className,
-		radius,
-		onChangeRadius,
+		size,
+		onChangeSize,
 	}
 ) => {
 
@@ -31,16 +29,16 @@ const CircleSizeInput: React.FC<CircleSizeInputProps> = (
 		<StyledSlider
 			min={MIN_RADIUS}
 			max={MAX_RADIUS}
-			value={radius}
+			value={size}
 			onChange={(_event, value) => {
-				onChangeRadius(value as number);
+				onChangeSize(value as number);
 			}}
-			valueLabelDisplay={"auto"}
+			valueLabelDisplay={"off"}
 			size={"small"}
 		/>
-		<PreviewCircle
-			radius={radius}
-		/>
+		<Typography variant={"body2"}>
+			{size}px
+		</Typography>
 	</Root>;
 };
 
@@ -49,24 +47,6 @@ const Root = styled(Paper)(({theme}) => ({
 	alignItems: "center",
 	gap: theme.spacing(2),
 	padding: theme.spacing(0.5, 2),
-}));
-
-const PreviewCircle = styled("div")<{radius: number}>(({theme, radius}) => ({
-	display: "flex",
-	alignItems: "center",
-	justifyContent: "center",
-	width: theme.spacing(2),
-	height: theme.spacing(2),
-
-	"&:after": {
-		content: "\"\"",
-		display: "inline-block",
-		width: "100%",
-		height: "100%",
-		transform: `scale(${Math.max(radius / MAX_RADIUS)})`,
-		borderRadius: "50%",
-		background: theme.palette.text.primary,
-	}
 }));
 
 const StyledSlider = styled(Slider)(({theme}) => ({

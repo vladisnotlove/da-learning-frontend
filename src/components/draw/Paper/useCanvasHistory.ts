@@ -1,6 +1,16 @@
 import React, {useRef} from "react";
 import DataHistory from "Utils/DataHistory";
 
+const areEquals = (im1: ImageData | undefined, im2: ImageData | undefined) => {
+	if (!im1) return false;
+	if (!im2) return false;
+	if (im1.width !== im2.width || im1.height !== im2.height) return false;
+	for (let i = 0; i < im1.data.length; i++) {
+		if (im1.data[i] !== im2.data[i]) return false;
+	}
+	return true;
+};
+
 
 const useCanvasHistory = (
 	canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
@@ -38,9 +48,11 @@ const useCanvasHistory = (
 	};
 
 	const save = () => {
+		const history = historyRef.current;
 		const canvasImageData = getCanvasImageData();
-		if (canvasImageData) {
-			historyRef.current.add(canvasImageData);
+
+		if (canvasImageData && !areEquals(canvasImageData, history.currentData)) {
+			history.add(canvasImageData);
 		}
 	};
 

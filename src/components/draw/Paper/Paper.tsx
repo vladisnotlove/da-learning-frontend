@@ -28,7 +28,6 @@ export type PaperProps = {
 	brush?: {
 		shape: "circle",
 		radius: number,
-		blur: number,
 	} | {
 		shape: "rect",
 		width: number,
