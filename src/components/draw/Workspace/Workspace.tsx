@@ -20,6 +20,7 @@ type WorkspaceProps = {
 	scaleStep?: number,
 	minScale?: number,
 	maxScale?: number,
+	style?: React.CSSProperties,
 }
 
 const Workspace: React.FC<WorkspaceProps> = (
@@ -30,6 +31,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 		scaleStep = 0.1,
 		minScale = 0.25,
 		maxScale = 200,
+		style,
 	}
 ) => {
 	const [ready, setReady] = useState(false);
@@ -223,6 +225,7 @@ const Workspace: React.FC<WorkspaceProps> = (
 			}
 		}}
 		sx={sx}
+		style={style}
 	>
 		<Content
 			ref={contentRef}

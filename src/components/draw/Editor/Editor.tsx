@@ -10,20 +10,31 @@ import ToolPanel, {ToolPanelProps} from "Components/draw/ToolPanel";
 import Color from "Utils/draw/Color";
 import CircleSizeInput from "Components/draw/CircleSizeInput";
 
-
-
-const TToolToSmoothRadius: Record<ToolPanelProps["selectedTool"], PaperProps["smoothRadius"]> = {
-	pen: 0,
-	brush: 6,
-	erase: 0,
-	hand: 0
-};
-
-const TToolToMode: Record<ToolPanelProps["selectedTool"], PaperProps["mode"]> = {
-	pen: "draw",
-	brush: "draw",
-	erase: "erase",
-	hand: "nothing"
+const TToolToProps: Record<ToolPanelProps["selectedTool"], Pick<PaperProps, "mode" | "smoothRadius" | "smoothFriction" | "smoothCurve">> = {
+	pen: {
+		mode: "draw",
+		smoothFriction: 0.05,
+		smoothRadius: 1,
+		smoothCurve: 0.1,
+	},
+	brush: {
+		mode: "draw",
+		smoothFriction: 0.2,
+		smoothRadius: 1,
+		smoothCurve: 0.2,
+	},
+	erase: {
+		mode: "erase",
+		smoothFriction: 1,
+		smoothRadius: 0,
+		smoothCurve: 0.1,
+	},
+	hand: {
+		mode: "nothing",
+		smoothFriction: 1,
+		smoothRadius: 0,
+		smoothCurve: 0,
+	}
 };
 
 type EditorProps = {
@@ -41,7 +52,7 @@ const Editor: React.FC<EditorProps> = (
 	const [selectedTool, setSelectedTool] = useState<ToolPanelProps["selectedTool"]>("hand");
 
 	const [color, setColor] = useState<ToolPanelProps["color"]>(new Color({r: 0, g: 0, b: 0, a: 1}));
-	const [radius, setRadius] = useState<number>(2);
+	const [diameter, setDiameter] = useState<number>(2);
 
 	return <Root
 		className={className}
@@ -54,8 +65,8 @@ const Editor: React.FC<EditorProps> = (
 		/>
 		{(selectedTool === "brush" || selectedTool === "erase" || selectedTool === "pen") &&
 			<StyledCircleSizeInput
-				radius={radius}
-				onChangeRadius={setRadius}
+				radius={diameter}
+				onChangeRadius={setDiameter}
 			/>
 		}
 		<StyledWorkspace>
@@ -63,13 +74,16 @@ const Editor: React.FC<EditorProps> = (
 				width={800}
 				height={600}
 
-				mode={TToolToMode[selectedTool]}
+				mode={TToolToProps[selectedTool].mode}
 				color={color}
 				brush={{
 					shape: "circle",
-					radius: radius,
+					radius: diameter * 0.5,
+					blur: Math.ceil(diameter * 0.1),
 				}}
-				smoothRadius={TToolToSmoothRadius[selectedTool]}
+				smoothRadius={TToolToProps[selectedTool].smoothRadius}
+				smoothFriction={TToolToProps[selectedTool].smoothFriction}
+				smoothCurve={TToolToProps[selectedTool].smoothCurve}
 
 				{...PaperProps}
 			/>

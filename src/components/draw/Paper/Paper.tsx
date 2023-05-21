@@ -10,8 +10,8 @@ import Vector from "Utils/geometry/Vector";
 import useWindowEvent from "Hooks/useWindowEvent";
 import useCanvasHistory from "./useCanvasHistory";
 import {LazyBrush} from "lazy-brush";
-import imageDataUtils from "Utils/draw/imageDataUtils";
-
+import useAnimationFrame from "Hooks/useAnimationFrame";
+import Queue from "Utils/Queue";
 
 const RIGHT_BUTTON = 0;
 
@@ -28,12 +28,15 @@ export type PaperProps = {
 	brush?: {
 		shape: "circle",
 		radius: number,
+		blur: number,
 	} | {
 		shape: "rect",
 		width: number,
 		height: number,
 	},
 	smoothRadius: number,
+	smoothCurve: number,
+	smoothFriction: number,
 }
 
 const Paper: React.FC<PaperProps> = (
@@ -45,24 +48,125 @@ const Paper: React.FC<PaperProps> = (
 		mode,
 		color,
 		brush,
-		smoothRadius,
+		smoothRadius, // 1...60
+		smoothCurve, // 0...0.5
+		smoothFriction, // 0...1
 	}
 ) => {
-	const [isHold, setIsHold] = useState(false);
+	const [scale, setScale] = useState(1);
+	const isHoldRef = useRef(false);
 
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+	const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
-	const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
-	const tempCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+	const brushCanvasRef = useRef<HTMLCanvasElement | null>(null);
+	const brushCanvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
-	// undo/redo
+	const colorHex = useMemo(() => color.toHex(), [color]);
+	const cursorPositionRef = useRef<Vector | null>(null);
+	const prevPointsRef = useRef<Queue<Vector>>(new Queue());
+	const prevControlPointRef = useRef<Vector | null>(null);
+	const lazy = useMemo(() => new LazyBrush({
+		enabled: true,
+		radius: smoothRadius,
+		initialPoint: {
+			x: 0,
+			y: 0
+		}
+	}), [smoothRadius]);
 
-	const {
-		save,
-		undo,
-		redo,
-	} = useCanvasHistory(canvasRef, 25);
+	const {save, undo, redo} = useCanvasHistory(canvasRef, 25);
+
+	// helpers
+
+	const drawBrush = () => {
+		const brushPosition = lazy.getBrushCoordinates();
+		const brushCanvasCtx = brushCanvasCtxRef.current;
+
+		if (brush && brushPosition && brushCanvasCtx) {
+			// clear canvas
+			brushCanvasCtx.clearRect(0, 0, brushCanvasCtx.canvas.width, brushCanvasCtx.canvas.height);
+
+			// draw brush
+			brushCanvasCtx.fillStyle = colorHex;
+			if (brush.shape === "circle") {
+				brushCanvasCtx.beginPath();
+				brushCanvasCtx.arc(brushPosition.x, brushPosition.y, brush.radius, 0, Math.PI * 2, true);
+				brushCanvasCtx.fill();
+			}
+		}
+	};
+
+	const updateBrush = () => {
+		const canvasCtx = canvasCtxRef.current;
+		const brushCanvas = brushCanvasRef.current;
+		const brushPosition = cursorPositionRef.current;
+		const prevPoints = prevPointsRef.current;
+		const isHold = isHoldRef.current;
+
+		if (canvasCtx && brushCanvas && brushPosition) {
+			lazy.update(brushPosition, {
+				friction: smoothFriction,
+			});
+
+			if (isHold) {
+				if (brush?.shape === "circle") {
+					canvasCtx.lineJoin = "round";
+					canvasCtx.lineCap = "round";
+					canvasCtx.strokeStyle = colorHex;
+					canvasCtx.lineWidth = brush.radius * 2;
+
+					const point = lazy.getBrushCoordinates();
+					prevPoints.enqueue(Vector.from(point));
+
+					if (prevPoints.size > 2) {
+						const p1 = prevPoints.dequeue() as Vector;
+						const p2 = prevPoints.peek() as Vector;
+						const p3 = prevPoints.peek(1) as Vector;
+
+						const tangent = p3.subtract(p1).multiply(smoothCurve);
+						const prevControlPoint = prevControlPointRef.current || p1;
+						const controlPoint = p2.add(tangent.multiply(-1));
+						const nextControlPoint = p2.add(tangent);
+
+						canvasCtx.beginPath();
+						canvasCtx.moveTo(p1.x, p1.y);
+						canvasCtx.bezierCurveTo(prevControlPoint.x, prevControlPoint.y, controlPoint.x, controlPoint.y, p2.x, p2.y);
+						canvasCtx.stroke();
+
+						prevControlPointRef.current = nextControlPoint;
+
+						// canvasCtx.fillStyle = "blue";
+						// canvasCtx.beginPath();
+						// canvasCtx.arc(p1.x, p1.y, 2, 0, 2 * Math.PI);
+						// canvasCtx.arc(p2.x, p2.y, 2, 0, 2 * Math.PI);
+						// canvasCtx.fill();
+						//
+						// canvasCtx.fillStyle = "red";
+						// canvasCtx.beginPath();
+						// canvasCtx.arc(prevControlPoint.x, prevControlPoint.y, 2, 0, 2 * Math.PI);
+						// canvasCtx.fill();
+						//
+						// canvasCtx.fillStyle = "green";
+						// canvasCtx.beginPath();
+						// canvasCtx.arc(controlPoint.x, controlPoint.y, 2, 0, 2 * Math.PI);
+						// canvasCtx.fill();
+						//
+						// console.log(p1, p2, p3);
+					}
+				}
+			}
+		}
+	};
+
+	// animation loop
+
+	useAnimationFrame(() => {
+		drawBrush();
+		updateBrush();
+	});
+
+	// event listeners
 
 	useWindowEvent("keydown", event => {
 		if (event.key?.toLowerCase() === "z" && event.ctrlKey && !event.shiftKey) {
@@ -76,221 +180,101 @@ const Paper: React.FC<PaperProps> = (
 		}
 	});
 
-	// draw
-
-	const colorHex = useMemo(() => {
-		return color.toHex();
-	}, [
-		color
-	]);
-
-	const lazyBrushRef = useRef<LazyBrush | null>(null);
-	const prevFixedBrushPositionRef = useRef<Vector | null>(null);
-
-	const brushSize = useMemo<Vector | null>(() => {
-		if (brush?.shape === "circle") {
-			return new Vector(brush.radius * 2, brush.radius * 2);
-		}
-		if (brush?.shape === "rect") {
-			return new Vector(brush.width, brush.height);
-		}
-		return null;
-	}, [brush]);
-
-	const brushImageData = useMemo<ImageData | null>(() => {
-		const tempCanvas = tempCanvasRef.current;
-		const tempCtx = tempCtxRef.current;
-
-		if (tempCtx && tempCanvas && brushSize) {
-			if (brush?.shape === "circle") {
-				tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-				tempCtx.fillStyle = colorHex;
-				tempCtx.beginPath();
-				tempCtx.arc(brushSize.x * 0.5, brushSize.y * 0.5, 1, 0, 2 * Math.PI, true);
-				tempCtx.fill();
-				return tempCtx.getImageData(0, 0, brushSize.x, brushSize.y);
-			}
-		}
-
-		return null;
-	}, [
-		brush,
-		colorHex,
-		brushSize
-	]);
-
-	const draw = (
-		cursorPosition: Vector,
-		options: {
-			isStart?: boolean,
-		} = {}
-	) => {
-		const canvas = canvasRef.current;
-		const ctx = ctxRef.current;
-
-		if (
-			canvas &&
-			ctx &&
-			brush &&
-			brushSize &&
-			brushImageData
-		) {
-
-			// get scale in canvas
-			const canvasRect = canvas.getBoundingClientRect();
-			const canvasSize = new Vector(canvasRect.width, canvasRect.height);
-			const scale = canvasSize.divide(new Vector(width, height)).x;
-
-			// get cursor position
-			const canvasPosition = new Vector(canvasRect.x, canvasRect.y);
-			const brushPosition = cursorPosition
-				.subtract(canvasPosition)
-				.divide(scale);
-
-			// get and update lazy brush
-			if (options?.isStart || !lazyBrushRef.current) {
-				lazyBrushRef.current = new LazyBrush({
-					enabled: true,
-					radius: smoothRadius,
-					initialPoint: brushPosition
-				});
-			}
-			const lazyBrush = lazyBrushRef.current;
-			lazyBrush.update(brushPosition);
-
-			const fixedBrushPosition = Vector.from(lazyBrush.getBrushCoordinates());
-			const prevFixedBrushPosition = Vector.from(prevFixedBrushPositionRef.current || fixedBrushPosition);
-
-			if (mode === "draw") {
-				if (brush.shape === "circle") {
-					if (options.isStart) {
-						ctx.beginPath();
-						ctx.moveTo(fixedBrushPosition.x, fixedBrushPosition.y);
-					}
-					ctx.strokeStyle = colorHex;
-					ctx.lineWidth = brush.radius;
-					ctx.lineJoin = "round";
-					ctx.lineCap = "round";
-					ctx.lineTo(fixedBrushPosition.x, fixedBrushPosition.y);
-					ctx.stroke();
-				}
-			}
-			if (mode === "erase") {
-				if (brush.shape === "circle") {
-					let brushTrack = [fixedBrushPosition];
-					if (!options.isStart) {
-						brushTrack = Vector.split(prevFixedBrushPosition, Vector.from(fixedBrushPosition), 1);
-					}
-
-					brushTrack.forEach(position => {
-						const fixedPosition = position.subtract(brushSize.multiply(0.5)).round();
-						const background = ctx.getImageData(
-							fixedPosition.x,
-							fixedPosition.y,
-							brushSize.x,
-							brushSize.y,
-						);
-						const erased = imageDataUtils.erase(background, brushImageData);
-						ctx.putImageData(
-							erased,
-							fixedPosition.x,
-							fixedPosition.y,
-						);
-					});
-				}
-			}
-
-			prevFixedBrushPositionRef.current = Vector.from(fixedBrushPosition);
-		}
-	};
-
-	useWindowEvent("mouseup", event => {
-		if (
-			mode === "draw" ||
-			mode === "erase"
-		) {
+	useWindowEvent("mousedown",event => {
+		if (mode === "draw" || mode === "erase") {
 			if (event.button !== RIGHT_BUTTON) return;
-			if (isHold) {
-				save();
-			}
-			setIsHold(false);
+			isHoldRef.current = true;
 		}
 	});
 
-	return <Root
-		className={className}
-		style={{
-			...(mode === "draw" && {
-				cursor: "crosshair",
-			}),
-			...(mode === "erase" && {
-				cursor: "crosshair",
-			})
-		}}
-	>
-		<TempCanvas
-			ref={node => {
-				tempCanvasRef.current = node;
-				tempCtxRef.current = node?.getContext("2d") || null;
-			}}
-			width={width}
-			height={height}
-		/>
-		<MainCanvas
-			ref={node => {
-				canvasRef.current = node;
-				ctxRef.current = node?.getContext("2d") || null;
-			}}
-			width={width}
-			height={height}
+	useWindowEvent("mousemove", event => {
+		const canvas = canvasRef.current;
+
+		if (mode === "draw" || mode === "erase") {
+
+			// update brush position
+			if (canvas) {
+				const canvasPosition = Vector.from(canvas.getBoundingClientRect());
+				cursorPositionRef.current = new Vector(event.pageX, event.pageY)
+					.subtract(canvasPosition)
+					.divide(scale);
+			}
+		}
+	});
+
+	useWindowEvent("mouseup", event => {
+		if (mode === "draw" || mode === "erase") {
+			if (event.button !== RIGHT_BUTTON) return;
+			if (isHoldRef.current) {
+				save();
+			}
+			isHoldRef.current = false;
+			prevPointsRef.current = new Queue();
+			prevControlPointRef.current = null;
+		}
+	});
+
+	return <>
+		<Root
+			className={className}
 			style={{
-				imageRendering: "pixelated",
+				...(mode !== "nothing" && {
+					//cursor: "none",
+				})
 			}}
-			onMouseDown={event => {
-				if (
-					mode === "draw" ||
-					mode === "erase"
-				) {
-					if (event.button !== RIGHT_BUTTON) return;
-					setIsHold(true);
-					draw(new Vector(event.pageX, event.pageY), {isStart: true});
-				}
-			}}
-			onMouseMove={event => {
-				if (
-					mode === "draw" ||
-					mode === "erase"
-				) {
-					if (event.button !== RIGHT_BUTTON) return;
-					if (isHold) {
-						draw(new Vector(event.pageX, event.pageY));
+		>
+			<MainCanvas
+				ref={node => {
+					canvasRef.current = node;
+					canvasCtxRef.current = node?.getContext("2d") || null;
+				}}
+				width={width}
+				height={height}
+				onResize={() => {
+					if (canvasRef.current) {
+						const canvasRect = canvasRef.current.getBoundingClientRect();
+						const canvasSize = new Vector(canvasRect.width, canvasRect.height);
+						const scale = canvasSize.divide(new Vector(width, height)).x;
+						setScale(scale);
 					}
-				}
-			}}
-		/>
-	</Root>;
+				}}
+			/>
+			<BrushCanvas
+				ref={node => {
+					brushCanvasRef.current = node;
+					brushCanvasCtxRef.current = node?.getContext("2d") || null;
+				}}
+				width={width}
+				height={height}
+			/>
+		</Root>
+	</>;
 };
 
 const Root = styled("div")({
+	position: "relative",
 	backgroundImage: "url(/assets/images/grid.svg)",
 	backgroundRepeat: "repeat",
-	fontSize: "0"
+	fontSize: "0",
+	overflow: "hidden",
 });
-
-
-const TempCanvas = styled(DACanvas)(() => ({
-	position: "absolute",
-	opacity: 0,
-	width: "100%",
-	height: "100%",
-	zIndex: 0,
-}));
 
 const MainCanvas = styled(DACanvas)(() => ({
 	position: "relative",
 	width: "100%",
 	height: "100%",
+	//imageRendering: "pixelated",
 	zIndex: 10,
+}));
+
+const BrushCanvas = styled(DACanvas)(() => ({
+	position: "absolute",
+	top: 0,
+	left: 0,
+	width: "100%",
+	height: "100%",
+	//imageRendering: "pixelated",
+	zIndex: 20,
 }));
 
 export default Paper;

@@ -4,16 +4,18 @@ import React, {useEffect, useRef} from "react";
 
 // Stores, utils, libs
 import refs from "Utils/react/refs";
+import useResizeObserver from "use-resize-observer";
 
 
 type DaCanvasProps = {
 	autoFit?: boolean,
+	onResize?: () => void,
 } & React.CanvasHTMLAttributes<HTMLCanvasElement>;
 
 const DaCanvas = React.forwardRef<HTMLCanvasElement, DaCanvasProps>((
 	{
 		autoFit,
-
+		onResize,
 		...props
 	},
 	ref,
@@ -33,8 +35,12 @@ const DaCanvas = React.forwardRef<HTMLCanvasElement, DaCanvasProps>((
 		autoFit,
 	]);
 
+	const {ref: refForResize} = useResizeObserver({
+		onResize: onResize
+	});
+
 	return <canvas
-		ref={refs(ref, canvasRef)}
+		ref={refs(ref, refForResize, canvasRef)}
 
 		{...props}
 	/>;
