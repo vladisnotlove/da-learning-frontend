@@ -1,9 +1,9 @@
 import useUpdatedRef from "./useUpdatedRef";
 import {useEffect, useRef} from "react";
 
-type TUseAnimationFrameCallback = (deltaMs: number) => void;
+type TUseAnimationLoopCallback = (deltaMs: number) => void;
 
-const useAnimationFrame = (callback: TUseAnimationFrameCallback) => {
+const useAnimationFrame = (callback: TUseAnimationLoopCallback) => {
 	const prevMsRef = useRef<number | null>(null);
 	const callbackRef = useUpdatedRef(callback);
 

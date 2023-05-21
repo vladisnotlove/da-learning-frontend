@@ -10,7 +10,7 @@ import Vector from "Utils/geometry/Vector";
 import useWindowEvent from "Hooks/useWindowEvent";
 import useCanvasHistory from "./useCanvasHistory";
 import {LazyBrush} from "lazy-brush";
-import useAnimationFrame from "Hooks/useAnimationFrame";
+import useAnimationLoop from "Hooks/useAnimationFrame";
 import Queue from "Utils/Queue";
 
 const RIGHT_BUTTON = 0;
@@ -80,6 +80,17 @@ const Paper: React.FC<PaperProps> = (
 	// helpers
 
 	const drawBrush = () => {
+
+		// update lazy
+		const cursorPosition = cursorPositionRef.current;
+
+		if (cursorPosition) {
+			lazy.update(cursorPosition, {
+				friction: smoothFriction,
+			});
+		}
+
+		// draw brush
 		const brushPosition = lazy.getBrushCoordinates();
 		const brushCanvasCtx = brushCanvasCtxRef.current;
 
@@ -97,63 +108,38 @@ const Paper: React.FC<PaperProps> = (
 		}
 	};
 
-	const updateBrush = () => {
+	const applyBrush = () => {
 		const canvasCtx = canvasCtxRef.current;
 		const brushCanvas = brushCanvasRef.current;
-		const brushPosition = cursorPositionRef.current;
 		const prevPoints = prevPointsRef.current;
 		const isHold = isHoldRef.current;
 
-		if (canvasCtx && brushCanvas && brushPosition) {
-			lazy.update(brushPosition, {
-				friction: smoothFriction,
-			});
+		if (isHold && canvasCtx && brushCanvas) {
+			if (brush?.shape === "circle") {
+				canvasCtx.lineJoin = "round";
+				canvasCtx.lineCap = "round";
+				canvasCtx.strokeStyle = colorHex;
+				canvasCtx.lineWidth = brush.radius * 2;
 
-			if (isHold) {
-				if (brush?.shape === "circle") {
-					canvasCtx.lineJoin = "round";
-					canvasCtx.lineCap = "round";
-					canvasCtx.strokeStyle = colorHex;
-					canvasCtx.lineWidth = brush.radius * 2;
+				const point = lazy.getBrushCoordinates();
+				prevPoints.enqueue(Vector.from(point));
 
-					const point = lazy.getBrushCoordinates();
-					prevPoints.enqueue(Vector.from(point));
+				if (prevPoints.size > 2) {
+					const p1 = prevPoints.dequeue() as Vector;
+					const p2 = prevPoints.peek() as Vector;
+					const p3 = prevPoints.peek(1) as Vector;
 
-					if (prevPoints.size > 2) {
-						const p1 = prevPoints.dequeue() as Vector;
-						const p2 = prevPoints.peek() as Vector;
-						const p3 = prevPoints.peek(1) as Vector;
+					const tangent = p3.subtract(p1).multiply(smoothCurve);
+					const prevControlPoint = prevControlPointRef.current || p1;
+					const controlPoint = p2.add(tangent.multiply(-1));
+					const nextControlPoint = p2.add(tangent);
 
-						const tangent = p3.subtract(p1).multiply(smoothCurve);
-						const prevControlPoint = prevControlPointRef.current || p1;
-						const controlPoint = p2.add(tangent.multiply(-1));
-						const nextControlPoint = p2.add(tangent);
+					canvasCtx.beginPath();
+					canvasCtx.moveTo(p1.x, p1.y);
+					canvasCtx.bezierCurveTo(prevControlPoint.x, prevControlPoint.y, controlPoint.x, controlPoint.y, p2.x, p2.y);
+					canvasCtx.stroke();
 
-						canvasCtx.beginPath();
-						canvasCtx.moveTo(p1.x, p1.y);
-						canvasCtx.bezierCurveTo(prevControlPoint.x, prevControlPoint.y, controlPoint.x, controlPoint.y, p2.x, p2.y);
-						canvasCtx.stroke();
-
-						prevControlPointRef.current = nextControlPoint;
-
-						// canvasCtx.fillStyle = "blue";
-						// canvasCtx.beginPath();
-						// canvasCtx.arc(p1.x, p1.y, 2, 0, 2 * Math.PI);
-						// canvasCtx.arc(p2.x, p2.y, 2, 0, 2 * Math.PI);
-						// canvasCtx.fill();
-						//
-						// canvasCtx.fillStyle = "red";
-						// canvasCtx.beginPath();
-						// canvasCtx.arc(prevControlPoint.x, prevControlPoint.y, 2, 0, 2 * Math.PI);
-						// canvasCtx.fill();
-						//
-						// canvasCtx.fillStyle = "green";
-						// canvasCtx.beginPath();
-						// canvasCtx.arc(controlPoint.x, controlPoint.y, 2, 0, 2 * Math.PI);
-						// canvasCtx.fill();
-						//
-						// console.log(p1, p2, p3);
-					}
+					prevControlPointRef.current = nextControlPoint;
 				}
 			}
 		}
@@ -161,9 +147,9 @@ const Paper: React.FC<PaperProps> = (
 
 	// animation loop
 
-	useAnimationFrame(() => {
+	useAnimationLoop(() => {
 		drawBrush();
-		updateBrush();
+		applyBrush();
 	});
 
 	// event listeners
