@@ -17,7 +17,7 @@ const RIGHT_BUTTON = 0;
 
 // MAIN
 
-export type PaperProps = {
+export type DrawZoneProps = {
 	className?: string,
 
 	width: number,
@@ -38,7 +38,7 @@ export type PaperProps = {
 	smoothFriction: number,
 }
 
-const Paper: React.FC<PaperProps> = (
+const DrawZone: React.FC<DrawZoneProps> = (
 	{
 		className,
 		width,
@@ -147,8 +147,10 @@ const Paper: React.FC<PaperProps> = (
 	// animation loop
 
 	useAnimationLoop(() => {
-		drawBrush();
-		applyBrush();
+		if (mode !== "nothing") {
+			drawBrush();
+			applyBrush();
+		}
 	});
 
 	// event listeners
@@ -262,4 +264,4 @@ const BrushCanvas = styled(DACanvas)(() => ({
 	zIndex: 20,
 }));
 
-export default Paper;
+export default DrawZone;

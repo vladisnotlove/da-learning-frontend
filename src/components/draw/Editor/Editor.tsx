@@ -3,46 +3,47 @@ import React, {useState} from "react";
 // Components
 import {styled} from "@mui/material";
 import Workspace from "Components/draw/Workspace";
-import Paper, {PaperProps} from "Components/draw/Paper";
+import DrawZone, {DrawZoneProps} from "Components/draw/DrawZone";
 import ToolPanel, {ToolPanelProps} from "Components/draw/ToolPanel";
+import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
 
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
-import CircleSizeInput from "Components/draw/CircleSizeInput";
-import useToolBrushSize from "./useToolSettings";
 import useLocalStorage from "Hooks/useLocalStorage";
 
-const TToolToConstProps: Record<ToolPanelProps["selectedTool"], Pick<PaperProps, "mode" | "smoothRadius" | "smoothFriction" | "smoothCurve">> = {
+const ToolToDrawZoneProps: Record<ToolPanelProps["selectedTool"], Pick<DrawZoneProps, "mode" | "smoothFriction" | "smoothCurve">> = {
 	pen: {
 		mode: "draw",
 		smoothFriction: 0.05,
-		smoothRadius: 1,
-		smoothCurve: 0.1,
+		smoothCurve: 0.1
 	},
 	brush: {
 		mode: "draw",
-		smoothFriction: 0.2,
-		smoothRadius: 1,
-		smoothCurve: 0.2,
+		smoothFriction: 0.1,
+		smoothCurve: 0.2
 	},
 	erase: {
 		mode: "erase",
-		smoothFriction: 1,
-		smoothRadius: 0,
-		smoothCurve: 0.1,
+		smoothFriction: 0,
+		smoothCurve: 0.1
 	},
 	hand: {
 		mode: "nothing",
-		smoothFriction: 1,
-		smoothRadius: 0,
-		smoothCurve: 0,
-	}
+		smoothFriction: 0,
+		smoothCurve: 0.1
+	},
+};
+const ToolToBrushSettings: Record<ToolPanelProps["selectedTool"], TBrushSettings> = {
+	pen: {smooth: 1, size: 2},
+	brush: {smooth: 5, size: 16},
+	erase: {smooth: 1, size: 16},
+	hand: {}
 };
 
 type EditorProps = {
 	className?: string,
 	children?: React.ReactNode,
-	PaperProps?: Partial<PaperProps>
+	PaperProps?: Partial<DrawZoneProps>
 }
 
 const Editor: React.FC<EditorProps> = (
@@ -51,10 +52,17 @@ const Editor: React.FC<EditorProps> = (
 		PaperProps,
 	}
 ) => {
-	const [selectedTool, setSelectedTool] = useLocalStorage<ToolPanelProps["selectedTool"]>("selectedTool", "hand");
+	const [
+		selectedTool,
+		setSelectedTool
+	] = useLocalStorage<ToolPanelProps["selectedTool"]>("da-selectedTool", "hand");
+
+	const [
+		brushSettings,
+		setBrushSettings
+	] = useLocalStorage<TBrushSettings>("da-tool-" + selectedTool, ToolToBrushSettings[selectedTool]);
 
 	const [color, setColor] = useState<ToolPanelProps["color"]>(new Color({r: 0, g: 0, b: 0, a: 1}));
-	const [brushSize, setBrushSize] = useToolBrushSize(selectedTool);
 
 	return <Root
 		className={className}
@@ -66,25 +74,26 @@ const Editor: React.FC<EditorProps> = (
 			onChangeColor={setColor}
 		/>
 		{(selectedTool === "brush" || selectedTool === "erase" || selectedTool === "pen") &&
-			<StyledCircleSizeInput
-				size={brushSize}
-				onChangeSize={setBrushSize}
+			<StyledBrushSettings
+				key={selectedTool}
+				settings={brushSettings}
+				onChange={setBrushSettings}
 			/>
 		}
 		<StyledWorkspace>
-			<Paper
+			<DrawZone
 				width={800}
 				height={600}
 
-				mode={TToolToConstProps[selectedTool].mode}
+				mode={ToolToDrawZoneProps[selectedTool].mode}
 				color={color}
 				brush={{
 					shape: "circle",
-					radius: brushSize * 0.5,
+					radius: (brushSettings.size || 2) * 0.5,
 				}}
-				smoothRadius={TToolToConstProps[selectedTool].smoothRadius}
-				smoothFriction={TToolToConstProps[selectedTool].smoothFriction}
-				smoothCurve={TToolToConstProps[selectedTool].smoothCurve}
+				smoothRadius={brushSettings.smooth || 1}
+				smoothFriction={ToolToDrawZoneProps[selectedTool].smoothFriction}
+				smoothCurve={ToolToDrawZoneProps[selectedTool].smoothCurve}
 
 				{...PaperProps}
 			/>
@@ -106,11 +115,10 @@ const StyledToolPanel = styled(ToolPanel)(({theme}) => ({
 	zIndex: 100,
 }));
 
-const StyledCircleSizeInput = styled(CircleSizeInput)(({theme}) => ({
+const StyledBrushSettings = styled(BrushSettings)(({theme}) => ({
 	position: "absolute",
 	top: theme.spacing(1.5),
-	left: "50%",
-	transform: "translateX(-50%)",
+	right: theme.spacing(1.5),
 	zIndex: 100,
 }));
 
