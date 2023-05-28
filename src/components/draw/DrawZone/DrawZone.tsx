@@ -98,11 +98,21 @@ const DrawZone: React.FC<DrawZoneProps> = (
 			brushCanvasCtx.clearRect(0, 0, brushCanvasCtx.canvas.width, brushCanvasCtx.canvas.height);
 
 			// draw brush
-			brushCanvasCtx.fillStyle = colorHex;
 			if (brush.shape === "circle") {
+				if (mode === "draw") {
+					brushCanvasCtx.fillStyle = colorHex;
+					brushCanvasCtx.lineWidth = 0;
+					brushCanvasCtx.strokeStyle = "transparent";
+				}
+				if (mode === "erase") {
+					brushCanvasCtx.fillStyle = "white";
+					brushCanvasCtx.lineWidth = 1;
+					brushCanvasCtx.strokeStyle = "black";
+				}
 				brushCanvasCtx.beginPath();
 				brushCanvasCtx.arc(brushPosition.x, brushPosition.y, brush.radius, 0, Math.PI * 2, true);
 				brushCanvasCtx.fill();
+				brushCanvasCtx.stroke();
 			}
 		}
 	};
@@ -120,6 +130,8 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				canvasCtx.strokeStyle = colorHex;
 				canvasCtx.lineWidth = brush.radius * 2;
 
+				if (mode === "erase") canvasCtx.globalCompositeOperation = "destination-out";
+
 				const point = lazy.getBrushCoordinates();
 				prevPoints.enqueue(Vector.from(point));
 
@@ -133,13 +145,17 @@ const DrawZone: React.FC<DrawZoneProps> = (
 					const controlPoint = p2.add(tangent.multiply(-1));
 					const nextControlPoint = p2.add(tangent);
 
+
 					canvasCtx.beginPath();
 					canvasCtx.moveTo(p1.x, p1.y);
 					canvasCtx.bezierCurveTo(prevControlPoint.x, prevControlPoint.y, controlPoint.x, controlPoint.y, p2.x, p2.y);
 					canvasCtx.stroke();
 
+
 					prevControlPointRef.current = nextControlPoint;
 				}
+
+				canvasCtx.globalCompositeOperation = "source-over";
 			}
 		}
 	};
@@ -164,13 +180,6 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		}
 		if (event.key?.toLowerCase() === "y" && event.ctrlKey) {
 			redo();
-		}
-	});
-
-	useWindowEvent("mousedown",event => {
-		if (mode === "draw" || mode === "erase") {
-			if (event.button !== RIGHT_BUTTON) return;
-			isHoldRef.current = true;
 		}
 	});
 
@@ -208,6 +217,12 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				...(mode !== "nothing" && {
 					//cursor: "none",
 				})
+			}}
+			onMouseDown={event => {
+				if (mode === "draw" || mode === "erase") {
+					if (event.button !== RIGHT_BUTTON) return;
+					isHoldRef.current = true;
+				}
 			}}
 		>
 			<MainCanvas
