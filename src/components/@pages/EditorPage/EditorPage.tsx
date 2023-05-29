@@ -3,7 +3,7 @@ import React from "react";
 import PageLayout from "Components/@layout/PageLayout";
 
 import useNavItems from "Hooks/useNavItems";
-import Editor from "Components/draw/Editor";
+import Editor from "Components/Editor";
 
 
 const EditorPage = () => {

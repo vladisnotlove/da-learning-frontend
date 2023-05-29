@@ -2,9 +2,9 @@ import React, {useState} from "react";
 
 // Components
 import {styled} from "@mui/material";
-import Workspace from "Components/draw/Workspace";
-import DrawZone, {DrawZoneProps} from "Components/draw/DrawZone";
-import ToolPanel, {ToolPanelProps} from "Components/draw/ToolPanel";
+import Workspace from "Components/Workspace";
+import DrawZone, {DrawZoneProps} from "Components/DrawZone";
+import ToolPanel, {ToolPanelProps} from "Components/ToolPanel";
 import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
 
 // Stores, utils, libs
@@ -37,7 +37,7 @@ const ToolToBrushSettings: Record<ToolPanelProps["selectedTool"], TBrushSettings
 	pen: {smooth: 1, size: 2},
 	brush: {smooth: 5, size: 16},
 	erase: {smooth: 1, size: 16},
-	hand: {}
+	hand: {smooth: 1, size: 1},
 };
 
 type EditorProps = {
@@ -101,12 +101,12 @@ const Editor: React.FC<EditorProps> = (
 	</Root>;
 };
 
-const Root = styled("div")(() => ({
-	display: "flex",
-	flexDirection: "column",
-	position: "relative",
-	height: "100%",
-}));
+const Root = styled("div")`
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+`;
 
 const StyledToolPanel = styled(ToolPanel)(({theme}) => ({
 	position: "absolute",

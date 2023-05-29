@@ -6,11 +6,10 @@ import BrushIcon from "@mui/icons-material/Brush";
 import PenIcon from "@mui/icons-material/Edit";
 import CursorIcon from "Components/@icons/CursorIcon";
 import EraserIcon from "Components/@icons/EraserIcon";
-import ColorPicker from "Components/draw/ColorPicker/ColorPicker";
+import ColorPicker from "Components/ColorPicker";
 
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
-
 
 
 type TTool = "hand" | "brush" | "pen" | "erase";
