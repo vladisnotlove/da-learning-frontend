@@ -10,13 +10,9 @@ import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
 import useLocalStorage from "Hooks/useLocalStorage";
+import {TTool} from "Constants/tools";
 
-const ToolToDrawZoneProps: Record<ToolPanelProps["selectedTool"], Pick<DrawZoneProps, "mode" | "smoothFriction" | "smoothCurve">> = {
-	pen: {
-		mode: "draw",
-		smoothFriction: 0.05,
-		smoothCurve: 0.1
-	},
+const ToolToDrawZoneProps: Record<TTool, Pick<DrawZoneProps, "mode" | "smoothFriction" | "smoothCurve">> = {
 	brush: {
 		mode: "draw",
 		smoothFriction: 0.1,
@@ -33,8 +29,7 @@ const ToolToDrawZoneProps: Record<ToolPanelProps["selectedTool"], Pick<DrawZoneP
 		smoothCurve: 0.1
 	},
 };
-const ToolToBrushSettings: Record<ToolPanelProps["selectedTool"], TBrushSettings> = {
-	pen: {smooth: 1, size: 2},
+const ToolToBrushSettings: Record<TTool, TBrushSettings> = {
 	brush: {smooth: 5, size: 16},
 	erase: {smooth: 1, size: 16},
 	hand: {smooth: 1, size: 1},
@@ -55,31 +50,29 @@ const Editor: React.FC<EditorProps> = (
 	const [
 		selectedTool,
 		setSelectedTool
-	] = useLocalStorage<ToolPanelProps["selectedTool"]>("da-selectedTool", "hand");
+	] = useLocalStorage<TTool>("da-selectedTool", "hand");
 
 	const [
 		brushSettings,
 		setBrushSettings
 	] = useLocalStorage<TBrushSettings>("da-tool-" + selectedTool, ToolToBrushSettings[selectedTool]);
 
-	const [color, setColor] = useState<ToolPanelProps["color"]>(new Color({r: 0, g: 0, b: 0, a: 1}));
+	const [position, setPosition] = useState({x: 0, y: 0});
+	const [color, setColor] = useState<ToolPanelProps["color"]>(
+		new Color({r: 0, g: 0, b: 0, a: 1})
+	);
 
 	return <Root
 		className={className}
 	>
-		<StyledToolPanel
+		<ToolPanel
 			selectedTool={selectedTool}
-			onSelectTool={setSelectedTool}
+			onSelectTool={tool => {
+				setSelectedTool(tool);
+			}}
 			color={color}
 			onChangeColor={setColor}
 		/>
-		{(selectedTool === "brush" || selectedTool === "erase" || selectedTool === "pen") &&
-			<StyledBrushSettings
-				key={selectedTool}
-				settings={brushSettings}
-				onChange={setBrushSettings}
-			/>
-		}
 		<StyledWorkspace>
 			<DrawZone
 				width={800}
@@ -98,22 +91,24 @@ const Editor: React.FC<EditorProps> = (
 				{...PaperProps}
 			/>
 		</StyledWorkspace>
+		{(selectedTool === "brush" || selectedTool === "erase") &&
+			<StyledBrushSettings
+				key={selectedTool}
+				settings={brushSettings}
+				defaultPosition={position}
+				onChange={setBrushSettings}
+				onChangePosition={setPosition}
+			/>
+		}
 	</Root>;
 };
 
 const Root = styled("div")`
   display: flex;
-  flex-direction: column;
   position: relative;
   height: 100%;
+  overflow: hidden;
 `;
-
-const StyledToolPanel = styled(ToolPanel)(({theme}) => ({
-	position: "absolute",
-	top: theme.spacing(1.5),
-	left: theme.spacing(1.5),
-	zIndex: 100,
-}));
 
 const StyledBrushSettings = styled(BrushSettings)(({theme}) => ({
 	position: "absolute",

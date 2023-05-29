@@ -3,16 +3,14 @@ import React, {useRef, useState} from "react";
 // Components
 import {IconButton, Paper, Stack, styled} from "@mui/material";
 import BrushIcon from "@mui/icons-material/Brush";
-import PenIcon from "@mui/icons-material/Edit";
 import CursorIcon from "Components/@icons/CursorIcon";
 import EraserIcon from "Components/@icons/EraserIcon";
 import ColorPicker from "Components/ColorPicker";
 
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
+import type {TTool} from "Constants/tools";
 
-
-type TTool = "hand" | "brush" | "pen" | "erase";
 
 export type ToolPanelProps = {
 	className?: string,
@@ -40,11 +38,13 @@ const ToolPanel: React.FC<ToolPanelProps> = (
 		className={className}
 		variant={"outlined"}
 		sx={{
-			padding: 0.75
+			padding: 0.75,
+			borderRadius: 0,
 		}}
 	>
 		<Stack
 			direction={"column"}
+			alignItems={"center"}
 			gap={0.75}
 		>
 			<IconButton
@@ -75,14 +75,6 @@ const ToolPanel: React.FC<ToolPanelProps> = (
 				}}
 			>
 				<CursorIcon />
-			</IconButton>
-			<IconButton
-				color={selectedTool === "pen" ? "primary" : "default"}
-				onClick={() => {
-					onSelectTool("pen");
-				}}
-			>
-				<PenIcon />
 			</IconButton>
 			<IconButton
 				color={selectedTool === "brush" ? "primary" : "default"}
