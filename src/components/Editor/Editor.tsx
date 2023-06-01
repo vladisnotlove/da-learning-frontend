@@ -12,27 +12,24 @@ import Color from "Utils/draw/Color";
 import useLocalStorage from "Hooks/useLocalStorage";
 import {TTool} from "Constants/tools";
 
-const ToolToDrawZoneProps: Record<TTool, Pick<DrawZoneProps, "mode" | "smoothFriction" | "smoothCurve">> = {
+const ToolToDrawZoneProps: Record<TTool, Pick<DrawZoneProps, "mode" | "smoothCurve">> = {
 	brush: {
 		mode: "draw",
-		smoothFriction: 0.1,
 		smoothCurve: 0.2
 	},
 	erase: {
 		mode: "erase",
-		smoothFriction: 0,
 		smoothCurve: 0.1
 	},
 	hand: {
 		mode: "nothing",
-		smoothFriction: 0,
 		smoothCurve: 0.1
 	},
 };
 const ToolToBrushSettings: Record<TTool, TBrushSettings> = {
-	brush: {smooth: 5, size: 16},
-	erase: {smooth: 1, size: 16},
-	hand: {smooth: 1, size: 1},
+	brush: {smooth: 1, size: 2, friction: 0.1},
+	erase: {smooth: 1, size: 16, friction: 0},
+	hand: {smooth: 1, size: 1, friction: 0},
 };
 
 type EditorProps = {
@@ -85,7 +82,7 @@ const Editor: React.FC<EditorProps> = (
 					radius: (brushSettings.size || 2) * 0.5,
 				}}
 				smoothRadius={brushSettings.smooth || 1}
-				smoothFriction={ToolToDrawZoneProps[selectedTool].smoothFriction}
+				smoothFriction={brushSettings.friction}
 				smoothCurve={ToolToDrawZoneProps[selectedTool].smoothCurve}
 
 				{...PaperProps}

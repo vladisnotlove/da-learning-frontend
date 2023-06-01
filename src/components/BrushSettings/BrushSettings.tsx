@@ -6,19 +6,22 @@ const MIN_SIZE = 1;
 const MAX_SIZE = 50;
 const MIN_SMOOTH = 1;
 const MAX_SMOOTH = 30;
+const MIN_FRICTION = 0;
+const MAX_FRICTION = 0.6;
 
 
 export type TBrushSettings = {
 	size: number,
 	smooth: number,
+	friction: number,
 }
 
 export type BrushSettingsProps = {
 	className?: string,
 	children?: React.ReactNode,
 	settings: TBrushSettings,
-	defaultPosition?: {x: number, y: number},
 	onChange: (settings: TBrushSettings) => void,
+	defaultPosition?: {x: number, y: number},
 	onChangePosition?: (position: {x: number, y: number}) => void,
 }
 
@@ -31,7 +34,7 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 		onChangePosition,
 	}
 ) => {
-	const {size, smooth} = settings;
+	const {size, smooth, friction} = settings;
 
 	return <Window
 		className={className}
@@ -68,7 +71,7 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 			{/* smooth */}
 			<Prop>
 				<Typography variant={"body2"}>
-					Сглаживание
+					Радиус сглаживание
 				</Typography>
 				<PropBody>
 					<StyledSlider
@@ -86,6 +89,31 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 					/>
 					<Preview variant={"body2"} fontFamily={"monospace"}>
 						{smooth}
+					</Preview>
+				</PropBody>
+			</Prop>
+			{/* Friction */}
+			<Prop>
+				<Typography variant={"body2"}>
+					Трение
+				</Typography>
+				<PropBody>
+					<StyledSlider
+						min={MIN_FRICTION}
+						max={MAX_FRICTION}
+						step={0.05}
+						value={friction}
+						onChange={(_event, value) => {
+							onChange({
+								...settings,
+								friction: value as number
+							});
+						}}
+						valueLabelDisplay={"off"}
+						size={"small"}
+					/>
+					<Preview variant={"body2"} fontFamily={"monospace"}>
+						{friction.toFixed(2)}
 					</Preview>
 				</PropBody>
 			</Prop>
