@@ -11,6 +11,9 @@ import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
 import Color from "Utils/draw/Color";
 import useLocalStorage from "Hooks/useLocalStorage";
 import {TTool} from "Constants/tools";
+import {TDrawZoneLayer} from "Components/DrawZone";
+import createEmptyImageData from "Utils/canvas/createEmptyImageData";
+import Vector from "Utils/geometry/Vector";
 
 const ToolToDrawZoneProps: Record<TTool, Pick<DrawZoneProps, "mode" | "smoothCurve">> = {
 	brush: {
@@ -44,6 +47,9 @@ const Editor: React.FC<EditorProps> = (
 		PaperProps,
 	}
 ) => {
+	const [size] = useState(new Vector(800, 600));
+	const [layers, setLayers] = useState<TDrawZoneLayer[]>([{id: 0, imageData: createEmptyImageData(size)}]);
+
 	const [
 		selectedTool,
 		setSelectedTool
@@ -72,8 +78,12 @@ const Editor: React.FC<EditorProps> = (
 		/>
 		<StyledWorkspace>
 			<DrawZone
-				width={800}
-				height={600}
+				width={size.x}
+				height={size.y}
+
+				layers={layers}
+				activeLayerId={0}
+				onLayersUpdate={setLayers}
 
 				mode={ToolToDrawZoneProps[selectedTool].mode}
 				color={color}

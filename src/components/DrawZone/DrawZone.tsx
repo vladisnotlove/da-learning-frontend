@@ -1,4 +1,4 @@
-import React, {useMemo, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 
 // Components
 import {styled} from "@mui/material";
@@ -7,13 +7,18 @@ import DACanvas from "Components/@common/DACanvas";
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
 import Vector from "Utils/geometry/Vector";
-import useWindowEvent from "Hooks/useWindowEvent";
-import useCanvasHistory from "./useCanvasHistory";
-import {LazyBrush} from "lazy-brush";
-import useAnimationLoop from "Hooks/useAnimationFrame";
 import Queue from "Utils/Queue";
+import useWindowEvent from "Hooks/useWindowEvent";
+import useAnimationLoop from "Hooks/useAnimationFrame";
+import useDebounce from "Hooks/useDebounce";
+import {LazyBrush} from "lazy-brush";
 
 const RIGHT_BUTTON = 0;
+
+export type TDrawZoneLayer = {
+	id: number,
+	imageData: ImageData,
+}
 
 // MAIN
 
@@ -22,6 +27,10 @@ export type DrawZoneProps = {
 
 	width: number,
 	height: number,
+
+	layers: TDrawZoneLayer[],
+	activeLayerId: TDrawZoneLayer["id"],
+	onLayersUpdate: (layers: TDrawZoneLayer[]) => void,
 
 	mode: "draw" | "erase" | "nothing",
 	color: Color,
@@ -44,6 +53,10 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		width,
 		height,
 
+		layers,
+		activeLayerId,
+		onLayersUpdate,
+
 		mode,
 		color,
 		brush,
@@ -57,6 +70,9 @@ const DrawZone: React.FC<DrawZoneProps> = (
 
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+
+	const secondCanvasesRef = useRef<(HTMLCanvasElement | null)[]>([]);
+	const secondCanvasCtxesRef = useRef<(CanvasRenderingContext2D | null)[]>([]);
 
 	const brushCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const brushCanvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -74,9 +90,33 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		}
 	}), [smoothRadius]);
 
-	const {save, undo, redo} = useCanvasHistory(canvasRef, 25);
+	const activeLayer = useMemo(() => {
+		return layers.find(layer => layer.id === activeLayerId);
+	}, [layers, activeLayerId]);
+
+	const inactiveLayers = useMemo(() => {
+		return layers.filter(layer => layer.id !== activeLayerId);
+	}, [layers, activeLayerId]);
 
 	// helpers
+
+	const updateLayers = useDebounce(() => {
+		const ctx = canvasCtxRef.current;
+
+		if (ctx) {
+			const newLayers = layers.map(layer => {
+				if (layer.id === activeLayerId) {
+					return {
+						...layer,
+						imageData: ctx.getImageData(0, 0, width, height),
+					};
+				}
+				return layer;
+			});
+			onLayersUpdate(newLayers);
+		}
+	}, 200);
+
 
 	const drawBrush = () => {
 
@@ -160,6 +200,25 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		}
 	};
 
+	// effects
+
+	useEffect(() => {
+		// draw active layer
+		const ctx = canvasCtxRef.current;
+		if (activeLayer && ctx) {
+			ctx.putImageData(activeLayer.imageData, 0, 0);
+		}
+
+		// draw other layers
+		inactiveLayers.forEach((layer, index) => {
+			const ctx = secondCanvasCtxesRef.current[index];
+			if (ctx) {
+				ctx.putImageData(layer.imageData, 0, 0);
+			}
+		});
+	}, [activeLayer, inactiveLayers]);
+
+
 	// animation loop
 
 	useAnimationLoop(() => {
@@ -170,18 +229,6 @@ const DrawZone: React.FC<DrawZoneProps> = (
 	});
 
 	// event listeners
-
-	useWindowEvent("keydown", event => {
-		if (event.key?.toLowerCase() === "z" && event.ctrlKey && !event.shiftKey) {
-			undo();
-		}
-		if (event.key?.toLowerCase() === "z" && event.ctrlKey && event.shiftKey) {
-			redo();
-		}
-		if (event.key?.toLowerCase() === "y" && event.ctrlKey) {
-			redo();
-		}
-	});
 
 	useWindowEvent("mousemove", event => {
 		const canvas = canvasRef.current;
@@ -202,7 +249,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		if (mode === "draw" || mode === "erase") {
 			if (event.button !== RIGHT_BUTTON) return;
 			if (isHoldRef.current) {
-				save();
+				updateLayers();
 			}
 			isHoldRef.current = false;
 			prevPointsRef.current = new Queue();
@@ -225,7 +272,20 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				}
 			}}
 		>
+			{inactiveLayers.map((layer, index) => (
+				<SecondCanvas
+					className={"second"}
+					key={layer.id}
+					ref={node => {
+						secondCanvasesRef.current[index] = node;
+						secondCanvasCtxesRef.current[index] = node?.getContext("2d") || null;
+					}}
+					width={width}
+					height={height}
+				/>
+			))}
 			<MainCanvas
+				className={"main"}
 				ref={node => {
 					canvasRef.current = node;
 					canvasCtxRef.current = node?.getContext("2d") || null;
@@ -242,6 +302,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				}}
 			/>
 			<BrushCanvas
+				className={"brush"}
 				ref={node => {
 					brushCanvasRef.current = node;
 					brushCanvasCtxRef.current = node?.getContext("2d") || null;
@@ -261,12 +322,22 @@ const Root = styled("div")({
 	overflow: "hidden",
 });
 
+const SecondCanvas = styled(DACanvas)(() => ({
+	position: "absolute",
+	top: 0,
+	left: 0,
+	width: "100%",
+	height: "100%",
+	//imageRendering: "pixelated",
+	zIndex: 10,
+}));
+
 const MainCanvas = styled(DACanvas)(() => ({
 	position: "relative",
 	width: "100%",
 	height: "100%",
 	//imageRendering: "pixelated",
-	zIndex: 10,
+	zIndex: 20,
 }));
 
 const BrushCanvas = styled(DACanvas)(() => ({
@@ -276,7 +347,7 @@ const BrushCanvas = styled(DACanvas)(() => ({
 	width: "100%",
 	height: "100%",
 	//imageRendering: "pixelated",
-	zIndex: 20,
+	zIndex: 30,
 }));
 
 export default DrawZone;
