@@ -4,7 +4,7 @@ import Window from "../@common/Window/index";
 import {ExpandLess} from "@mui/icons-material";
 
 const MIN_SIZE = 1;
-const MAX_SIZE = 50;
+const MAX_SIZE = 100;
 const MIN_SMOOTH = 1;
 const MAX_SMOOTH = 30;
 const MIN_FRICTION = 0;
