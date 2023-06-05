@@ -12,6 +12,8 @@ import useWindowEvent from "Hooks/useWindowEvent";
 import useAnimationLoop from "Hooks/useAnimationFrame";
 import useDebounce from "Hooks/useDebounce";
 import {LazyBrush} from "lazy-brush";
+import {TControl} from "./useDrawZone";
+import downloadCanvas from "Utils/canvas/downloadCanvas";
 
 const RIGHT_BUTTON = 0;
 
@@ -24,6 +26,8 @@ export type TDrawZoneLayer = {
 
 export type DrawZoneProps = {
 	className?: string,
+
+	control?: TControl,
 
 	width: number,
 	height: number,
@@ -50,6 +54,9 @@ export type DrawZoneProps = {
 const DrawZone: React.FC<DrawZoneProps> = (
 	{
 		className,
+
+		control,
+
 		width,
 		height,
 
@@ -72,10 +79,13 @@ const DrawZone: React.FC<DrawZoneProps> = (
 	const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
 	const secondCanvasesRef = useRef<(HTMLCanvasElement | null)[]>([]);
-	const secondCanvasCtxesRef = useRef<(CanvasRenderingContext2D | null)[]>([]);
+	const secondCanvasCtxsRef = useRef<(CanvasRenderingContext2D | null)[]>([]);
 
 	const brushCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const brushCanvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+
+	const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
+	const tempCanvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
 	const colorHex = useMemo(() => color.toHex(), [color]);
 	const cursorPositionRef = useRef<Vector | null>(null);
@@ -206,18 +216,46 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		// draw active layer
 		const ctx = canvasCtxRef.current;
 		if (activeLayer && ctx) {
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 			ctx.putImageData(activeLayer.imageData, 0, 0);
 		}
 
 		// draw other layers
 		inactiveLayers.forEach((layer, index) => {
-			const ctx = secondCanvasCtxesRef.current[index];
+			const ctx = secondCanvasCtxsRef.current[index];
 			if (ctx) {
 				ctx.putImageData(layer.imageData, 0, 0);
 			}
 		});
 	}, [activeLayer, inactiveLayers]);
 
+	useEffect(() => {
+		if (control) {
+			control.setControlObject({
+				downloadImage: () => {
+					const tempCtx = tempCanvasCtxRef.current;
+					const secondCanvases = secondCanvasesRef.current;
+					const canvas = canvasRef.current;
+
+					if (tempCtx && secondCanvases && canvas) {
+						// clear canvas
+						tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
+
+						// draw inactive layers on canvas
+						secondCanvases.forEach(secondCanvas => {
+							if (secondCanvas) tempCtx.drawImage(secondCanvas, 0, 0);
+						});
+
+						// draw active layer on canvas
+						tempCtx.drawImage(canvas, 0, 0);
+
+						// download canvas
+						downloadCanvas(tempCtx.canvas);
+					}
+				}
+			});
+		}
+	}, [control]);
 
 	// animation loop
 
@@ -278,7 +316,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 					key={layer.id}
 					ref={node => {
 						secondCanvasesRef.current[index] = node;
-						secondCanvasCtxesRef.current[index] = node?.getContext("2d") || null;
+						secondCanvasCtxsRef.current[index] = node?.getContext("2d") || null;
 					}}
 					width={width}
 					height={height}
@@ -306,6 +344,14 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				ref={node => {
 					brushCanvasRef.current = node;
 					brushCanvasCtxRef.current = node?.getContext("2d") || null;
+				}}
+				width={width}
+				height={height}
+			/>
+			<TempCanvas
+				ref={node => {
+					tempCanvasRef.current = node;
+					tempCanvasCtxRef.current = node?.getContext("2d") || null;
 				}}
 				width={width}
 				height={height}
@@ -349,5 +395,9 @@ const BrushCanvas = styled(DACanvas)(() => ({
 	//imageRendering: "pixelated",
 	zIndex: 30,
 }));
+
+const TempCanvas = styled(DACanvas)`
+	display: none;
+`;
 
 export default DrawZone;

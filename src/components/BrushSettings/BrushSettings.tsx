@@ -1,6 +1,7 @@
 import React from "react";
-import {Slider, styled, Typography} from "@mui/material";
+import {Collapse, IconButton, Slider, styled, Typography} from "@mui/material";
 import Window from "../@common/Window/index";
+import {ExpandLess} from "@mui/icons-material";
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -20,18 +21,24 @@ export type BrushSettingsProps = {
 	className?: string,
 	children?: React.ReactNode,
 	settings: TBrushSettings,
+	collapsed?: boolean,
+	defaultPosition?: { x: number, y: number },
 	onChange: (settings: TBrushSettings) => void,
-	defaultPosition?: {x: number, y: number},
-	onChangePosition?: (position: {x: number, y: number}) => void,
+	onChangePosition?: (position: { x: number, y: number }) => void,
+	onCollapse?: () => void,
+	onExpand?: () => void,
 }
 
 const BrushSettings: React.FC<BrushSettingsProps> = (
 	{
 		className,
-		settings ,
+		settings,
+		collapsed,
 		defaultPosition,
 		onChange,
 		onChangePosition,
+		onCollapse,
+		onExpand,
 	}
 ) => {
 	const {size, smooth, friction} = settings;
@@ -39,85 +46,107 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 	return <Window
 		className={className}
 		title={"Настройки кисти"}
+		action={
+			<IconButton
+				onClick={() => {
+					if (collapsed) {
+						if (onExpand) onExpand();
+					}
+					else {
+						if (onCollapse) onCollapse();
+					}
+				}}
+				style={{
+					transform: collapsed ? "rotate(180deg)" : undefined
+				}}
+			>
+				<ExpandLess
+					fontSize={"small"}
+				/>
+			</IconButton>
+		}
 		defaultPosition={defaultPosition}
 		onChangePosition={onChangePosition}
 		disableClose
+		disableGap
 	>
-		<Props>
-			{/* size */}
-			<Prop>
-				<Typography variant={"body2"}>
-					Размер
-				</Typography>
-				<PropBody>
-					<StyledSlider
-						min={MIN_SIZE}
-						max={MAX_SIZE}
-						value={size}
-						onChange={(_event, value) => {
-							onChange({
-								...settings,
-								size: value as number
-							});
-						}}
-						valueLabelDisplay={"off"}
-						size={"small"}
-					/>
-					<Preview variant={"body2"} fontFamily={"monospace"}>
-						{size}px
-					</Preview>
-				</PropBody>
-			</Prop>
-			{/* smooth */}
-			<Prop>
-				<Typography variant={"body2"}>
-					Радиус сглаживание
-				</Typography>
-				<PropBody>
-					<StyledSlider
-						min={MIN_SMOOTH}
-						max={MAX_SMOOTH}
-						value={smooth}
-						onChange={(_event, value) => {
-							onChange({
-								...settings,
-								smooth: value as number
-							});
-						}}
-						valueLabelDisplay={"off"}
-						size={"small"}
-					/>
-					<Preview variant={"body2"} fontFamily={"monospace"}>
-						{smooth}
-					</Preview>
-				</PropBody>
-			</Prop>
-			{/* Friction */}
-			<Prop>
-				<Typography variant={"body2"}>
-					Трение
-				</Typography>
-				<PropBody>
-					<StyledSlider
-						min={MIN_FRICTION}
-						max={MAX_FRICTION}
-						step={0.05}
-						value={friction}
-						onChange={(_event, value) => {
-							onChange({
-								...settings,
-								friction: value as number
-							});
-						}}
-						valueLabelDisplay={"off"}
-						size={"small"}
-					/>
-					<Preview variant={"body2"} fontFamily={"monospace"}>
-						{friction.toFixed(2)}
-					</Preview>
-				</PropBody>
-			</Prop>
-		</Props>
+		<Collapse in={!collapsed}>
+			<Props>
+				{/* size */}
+				<Prop>
+					<Typography variant={"body2"}>
+						Размер
+					</Typography>
+					<PropBody>
+						<StyledSlider
+							min={MIN_SIZE}
+							max={MAX_SIZE}
+							value={size}
+							onChange={(_event, value) => {
+								onChange({
+									...settings,
+									size: value as number
+								});
+							}}
+							valueLabelDisplay={"off"}
+							size={"small"}
+						/>
+						<Preview variant={"body2"} fontFamily={"monospace"}>
+							{size}px
+						</Preview>
+					</PropBody>
+				</Prop>
+				{/* smooth */}
+				<Prop>
+					<Typography variant={"body2"}>
+						Радиус сглаживание
+					</Typography>
+					<PropBody>
+						<StyledSlider
+							min={MIN_SMOOTH}
+							max={MAX_SMOOTH}
+							value={smooth}
+							onChange={(_event, value) => {
+								onChange({
+									...settings,
+									smooth: value as number
+								});
+							}}
+							valueLabelDisplay={"off"}
+							size={"small"}
+						/>
+						<Preview variant={"body2"} fontFamily={"monospace"}>
+							{smooth}
+						</Preview>
+					</PropBody>
+				</Prop>
+				{/* Friction */}
+				<Prop>
+					<Typography variant={"body2"}>
+						Трение
+					</Typography>
+					<PropBody>
+						<StyledSlider
+							min={MIN_FRICTION}
+							max={MAX_FRICTION}
+							step={0.05}
+							value={friction}
+							onChange={(_event, value) => {
+								onChange({
+									...settings,
+									friction: value as number
+								});
+							}}
+							valueLabelDisplay={"off"}
+							size={"small"}
+						/>
+						<Preview variant={"body2"} fontFamily={"monospace"}>
+							{friction.toFixed(2)}
+						</Preview>
+					</PropBody>
+				</Prop>
+			</Props>
+		</Collapse>
 	</Window>;
 };
 
@@ -125,6 +154,7 @@ const Props = styled("div")`
   display: flex;
   flex-direction: column;
   gap: ${props => props.theme.spacing(1)};
+  padding-top: ${p => p.theme.spacing(3)};
 `;
 
 const Prop = styled("div")`
