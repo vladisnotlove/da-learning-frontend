@@ -236,12 +236,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 
 	useEffect(() => {
 		drawLayers();
-	}, [activeLayer, inactiveLayers]);
-
-	useEffect(() => {
-		drawLayers();
-		triggerLayersUpdate();
-	}, [width, height]);
+	}, [activeLayer, inactiveLayers, width, height]);
 
 	useEffect(() => {
 		if (control) {

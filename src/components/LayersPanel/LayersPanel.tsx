@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useRef} from "react";
 import {Button, IconButton, Paper, styled} from "@mui/material";
 import {Add, Close} from "@mui/icons-material";
 import DACanvas from "../@common/DACanvas/index";
-import createEmptyImageData from "Utils/canvas/createEmptyImageData";
+import createEmptyImageData from "Utils/imageData/createEmptyImageData";
 
 // constants
 

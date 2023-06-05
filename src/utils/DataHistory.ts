@@ -5,9 +5,11 @@ class DataHistory<TData> {
 	nowItem?: TData;
 	futureItems: TData[] = [];
 
-	constructor(maxLength: number) {
+	constructor(maxLength: number, initialData?: TData[]) {
 		this.maxLength = Math.max(maxLength, 3);
-
+		if (initialData) {
+			initialData.forEach(data => this.add(data));
+		}
 	}
 
 	get currentData () {
@@ -20,6 +22,10 @@ class DataHistory<TData> {
 		value += this.futureItems.length;
 
 		return value;
+	}
+
+	get undoLength () {
+		return this.pastItems.length;
 	}
 
 	add (data: TData) {
@@ -57,6 +63,12 @@ class DataHistory<TData> {
 			if (this.nowItem) this.pastItems.push(this.nowItem);
 			this.nowItem = firstItem;
 		}
+	}
+
+	clear () {
+		this.pastItems = [];
+		this.nowItem = undefined;
+		this.futureItems = [];
 	}
 }
 

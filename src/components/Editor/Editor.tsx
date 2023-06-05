@@ -11,13 +11,15 @@ import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
 import Color from "Utils/draw/Color";
 import useLocalStorage from "Hooks/useLocalStorage";
 import {TTool} from "Constants/tools";
-import {TDrawZoneLayer} from "Components/DrawZone";
-import createEmptyImageData from "Utils/canvas/createEmptyImageData";
+import createEmptyImageData from "Utils/imageData/createEmptyImageData";
 import Vector from "Utils/geometry/Vector";
 import LayersPanel from "../LayersPanel/index";
 import useDrawZone from "../DrawZone/useDrawZone";
 import FilePanel from "../FilePanel/index";
 import ResizeDialog from "../ResizeDialog/index";
+import {useHistoryState} from "Hooks/useHistoryState";
+import useWindowEvent from "Hooks/useWindowEvent";
+import resizeImageData from "Utils/imageData/resizeImageData";
 
 const DEFAULT_FILENAME = "Без названия";
 
@@ -53,11 +55,14 @@ const Editor: React.FC<EditorProps> = (
 		PaperProps,
 	}
 ) => {
-	const [size, setSize] = useState(new Vector(800, 600));
+
+	const [stamp, setStamp, {undo, redo}] = useHistoryState({
+		size: new Vector(800, 600),
+		layers: [{id: 0, imageData: createEmptyImageData(new Vector(800, 600))}]
+	});
 	const [isResizeOpen, setIsResizeOpen] = useState(false);
 
 	const [activeLayerId, setActiveLayerId] = useState(0);
-	const [layers, setLayers] = useState<TDrawZoneLayer[]>([{id: 0, imageData: createEmptyImageData(size)}]);
 
 	const [
 		selectedTool,
@@ -81,6 +86,17 @@ const Editor: React.FC<EditorProps> = (
 	const [savedFileName, setSavedFileName] = useState(DEFAULT_FILENAME);
 	const [isEditing, setIsEditing] = useState(false);
 
+	useWindowEvent("keydown", event => {
+		if (event.key?.toLowerCase() === "z" && event.ctrlKey && !event.shiftKey) {
+			undo();
+		}
+		if (event.key?.toLowerCase() === "z" && event.ctrlKey && event.shiftKey) {
+			redo();
+		}
+		if (event.key?.toLowerCase() === "y" && event.ctrlKey) {
+			redo();
+		}
+	});
 
 	return <Root
 		className={className}
@@ -116,12 +132,17 @@ const Editor: React.FC<EditorProps> = (
 			<StyledWorkspace>
 				<DrawZone
 					control={control}
-					width={size.x}
-					height={size.y}
+					width={stamp.size.x}
+					height={stamp.size.y}
 
-					layers={layers}
+					layers={stamp.layers}
 					activeLayerId={activeLayerId}
-					onLayersUpdate={setLayers}
+					onLayersUpdate={(layers) => {
+						setStamp(prev => ({
+							...prev,
+							layers,
+						}));
+					}}
 
 					mode={ToolToDrawZoneProps[selectedTool].mode}
 					color={color}
@@ -150,27 +171,41 @@ const Editor: React.FC<EditorProps> = (
 			}
 		</WorkspaceWrapper>
 		<StyledLayersPanel
-			width={size.x}
-			height={size.y}
-			layers={layers}
+			width={stamp.size.x}
+			height={stamp.size.y}
+			layers={stamp.layers}
 			activeLayerId={activeLayerId}
-			onLayersChange={setLayers}
+			onLayersChange={(layers) => {
+				setStamp(prev => ({
+					...prev,
+					layers,
+				}));
+			}}
 			onLayerSelect={layer => {
 				setActiveLayerId(layer.id);
 			}}
 		/>
 		<ResizeDialog
+			key={`${stamp.size.x}-${stamp.size.y}`}
 			open={isResizeOpen}
 			onClose={() => {
 				setIsResizeOpen(false);
 			}}
 			onSave={({width, height}) => {
+				const size = new Vector(width, height);
+				setStamp(prev => ({
+					...prev,
+					layers: prev.layers.map(layer => ({
+						...layer,
+						imageData: resizeImageData(layer.imageData, size)
+					})),
+					size: size,
+				}));
 				setIsResizeOpen(false);
-				setSize(new Vector(width, height));
 			}}
 			defaultValues={{
-				width: size.x,
-				height: size.y
+				width: stamp.size.x,
+				height: stamp.size.y
 			}}
 		/>
 	</Root>;

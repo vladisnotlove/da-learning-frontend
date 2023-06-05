@@ -22,12 +22,16 @@ type TResizeValues = {
 	height: number,
 }
 
+type TFormMethods = {
+	reset: (values?: TResizeValues) => void
+}
+
 type ResizeDialogProps = {
 	className?: string,
 	children?: React.ReactNode,
 	open: boolean,
-	onClose: () => void,
-	onSave: (data: TResizeValues) => void,
+	onClose: (formMethods: TFormMethods) => void,
+	onSave: (data: TResizeValues, formMethods: TFormMethods) => void,
 	defaultValues?: TResizeValues,
 }
 
@@ -53,7 +57,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 			<Form
 				id={"resizeDialog"}
 				onSubmit={handleSubmit(data => {
-					onSave(data);
+					onSave(data, {reset});
 				})}
 			>
 				<Controller
@@ -126,8 +130,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 		</DialogContent>
 		<DialogActions>
 			<Button variant={"text"} onClick={() => {
-				onClose();
-				reset();
+				onClose({reset});
 			}}>
 				Отмена
 			</Button>
