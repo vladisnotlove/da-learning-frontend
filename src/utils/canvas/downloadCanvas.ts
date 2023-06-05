@@ -1,6 +1,6 @@
-const downloadCanvas = (canvas: HTMLCanvasElement) => {
+const downloadCanvas = (canvas: HTMLCanvasElement, name: string) => {
 	const link = document.createElement("a");
-	link.download = "filename.png";
+	link.download = `${name}.png`;
 	link.href = canvas.toDataURL();
 	link.click();
 	link.remove();

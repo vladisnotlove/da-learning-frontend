@@ -1,7 +1,7 @@
 import {useMemo, useRef} from "react";
 
 export type TControlObject = {
-	downloadImage: () => void,
+	downloadImage: (name: string) => void,
 }
 
 export type TControl = {
@@ -20,10 +20,10 @@ const useDrawZone = () => {
 	}, []);
 
 	const downloadImage = useMemo(() => {
-		return () => {
+		return (name: string) => {
 			const controlObj = controlObjectRef.current;
 			if (controlObj) {
-				controlObj.downloadImage();
+				controlObj.downloadImage(name);
 			}
 		};
 	}, []);

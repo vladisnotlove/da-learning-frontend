@@ -232,7 +232,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 	useEffect(() => {
 		if (control) {
 			control.setControlObject({
-				downloadImage: () => {
+				downloadImage: (name: string) => {
 					const tempCtx = tempCanvasCtxRef.current;
 					const secondCanvases = secondCanvasesRef.current;
 					const canvas = canvasRef.current;
@@ -250,7 +250,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 						tempCtx.drawImage(canvas, 0, 0);
 
 						// download canvas
-						downloadCanvas(tempCtx.canvas);
+						downloadCanvas(tempCtx.canvas, name);
 					}
 				}
 			});

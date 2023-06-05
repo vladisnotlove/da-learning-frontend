@@ -71,6 +71,7 @@ const LayersPanel: React.FC<LayersPanelProps> = (
 
 	return <Root
 		className={className}
+		variant={"outlined"}
 	>
 		{layers.map((layer, index) => (
 			<LayerCard
@@ -138,8 +139,9 @@ const LayersPanel: React.FC<LayersPanelProps> = (
 const Root = styled(Paper)`
   display: flex;
   flex-direction: column;
-  gap: ${p => p.theme.spacing(1)};
-  padding: ${p => p.theme.spacing(1)};
+  gap: ${p => p.theme.spacing(1.25)};
+  padding: ${p => p.theme.spacing(1.25)};
+  border-radius: 0;
 `;
 
 const TempCanvas = styled(DACanvas)`

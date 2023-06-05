@@ -15,6 +15,10 @@ import {TDrawZoneLayer} from "Components/DrawZone";
 import createEmptyImageData from "Utils/canvas/createEmptyImageData";
 import Vector from "Utils/geometry/Vector";
 import LayersPanel from "../LayersPanel/index";
+import useDrawZone from "../DrawZone/useDrawZone";
+import FilePanel from "../FilePanel/index";
+
+const DEFAULT_FILENAME = "Без названия";
 
 const ToolToDrawZoneProps: Record<TTool, Pick<DrawZoneProps, "mode" | "smoothCurve">> = {
 	brush: {
@@ -68,10 +72,31 @@ const Editor: React.FC<EditorProps> = (
 		new Color({r: 0, g: 0, b: 0, a: 1})
 	);
 
+	const {control, downloadImage} = useDrawZone();
+	const [fileName, setFileName] = useState(DEFAULT_FILENAME);
+	const [savedFileName, setSavedFileName] = useState(DEFAULT_FILENAME);
+	const [isEditing, setIsEditing] = useState(false);
+
 	return <Root
 		className={className}
 	>
-		<ToolPanel
+		<StyledFilePanel
+			fileName={isEditing ? fileName : savedFileName}
+			defaultFileName={DEFAULT_FILENAME}
+			onEditStart={() => setIsEditing(true)}
+			onChange={setFileName}
+			onEditEnd={fileName => {
+				setIsEditing(false);
+				setFileName(fileName);
+				setSavedFileName(fileName);
+			}}
+			onAction={(action) => {
+				if (action === "download") {
+					downloadImage(fileName);
+				}
+			}}
+		/>
+		<StyledToolPanel
 			selectedTool={selectedTool}
 			onSelectTool={tool => {
 				setSelectedTool(tool);
@@ -82,6 +107,7 @@ const Editor: React.FC<EditorProps> = (
 		<WorkspaceWrapper>
 			<StyledWorkspace>
 				<DrawZone
+					control={control}
 					width={size.x}
 					height={size.y}
 
@@ -115,7 +141,7 @@ const Editor: React.FC<EditorProps> = (
 				/>
 			}
 		</WorkspaceWrapper>
-		<LayersPanel
+		<StyledLayersPanel
 			width={size.x}
 			height={size.y}
 			layers={layers}
@@ -130,20 +156,19 @@ const Editor: React.FC<EditorProps> = (
 };
 
 const Root = styled("div")`
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: min-content 1fr;
+  grid-template-areas: 
+	"f f f"
+	"t w l";
   position: relative;
   height: 100%;
   overflow: hidden;
 `;
 
-const StyledBrushSettings = styled(BrushSettings)`
-  position: absolute;
-  top: ${p => p.theme.spacing(1.5)};
-  left: ${p => p.theme.spacing(1.5)};
-  z-index: 100;
-`;
-
 const WorkspaceWrapper = styled("div")`
+  grid-area: w;
   position: relative;
   flex-grow: 1;
   width: 100%;
@@ -156,5 +181,27 @@ const StyledWorkspace = styled(Workspace)`
   height: 100%;
   background: ${p => p.theme.palette.background.lower1};
 `;
+
+const StyledBrushSettings = styled(BrushSettings)`
+  position: absolute;
+  top: ${p => p.theme.spacing(2)};
+  left: ${p => p.theme.spacing(2)};
+  z-index: 100;
+`;
+
+const StyledFilePanel = styled(FilePanel)`
+  grid-area: f;
+`;
+
+const StyledToolPanel = styled(ToolPanel)`
+  grid-area: t;
+  border-top: none;
+`;
+
+const StyledLayersPanel = styled(LayersPanel)`
+  grid-area: l;
+  border-top: none;
+`;
+
 
 export default Editor;
