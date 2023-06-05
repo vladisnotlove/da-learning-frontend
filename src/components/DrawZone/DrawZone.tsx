@@ -232,7 +232,20 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		});
 	};
 
+	const updateScale = () => {
+		if (canvasRef.current) {
+			const canvasRect = canvasRef.current.getBoundingClientRect();
+			const canvasSize = new Vector(canvasRect.width, canvasRect.height);
+			const scale = canvasSize.divide(new Vector(width, height)).x;
+			setScale(scale);
+		}
+	};
+
 	// effects
+
+	useEffect(() => {
+		updateScale();
+	}, []);
 
 	useEffect(() => {
 		drawLayers();
@@ -335,12 +348,8 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				width={width}
 				height={height}
 				onResize={() => {
-					if (canvasRef.current) {
-						const canvasRect = canvasRef.current.getBoundingClientRect();
-						const canvasSize = new Vector(canvasRect.width, canvasRect.height);
-						const scale = canvasSize.divide(new Vector(width, height)).x;
-						setScale(scale);
-					}
+
+					updateScale();
 				}}
 			/>
 			<BrushCanvas

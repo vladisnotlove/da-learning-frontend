@@ -4,7 +4,7 @@ import React, {useEffect, useRef} from "react";
 
 // Stores, utils, libs
 import refs from "Utils/react/refs";
-import useResizeObserver from "use-resize-observer";
+import useResizeCheck from "Hooks/useResizeCheck";
 
 
 type DaCanvasProps = {
@@ -35,12 +35,16 @@ const DaCanvas = React.forwardRef<HTMLCanvasElement, DaCanvasProps>((
 		autoFit,
 	]);
 
-	const {ref: refForResize} = useResizeObserver({
-		onResize: onResize
+	const {targetRef} = useResizeCheck<HTMLCanvasElement>({
+		onResize: () => {
+			if (onResize) onResize();
+		},
+		ms: 300,
+		disabled: !onResize,
 	});
 
 	return <canvas
-		ref={refs(ref, refForResize, canvasRef)}
+		ref={refs(ref, targetRef, canvasRef)}
 
 		{...props}
 	/>;

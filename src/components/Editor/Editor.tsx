@@ -5,7 +5,11 @@ import {styled} from "@mui/material";
 import Workspace from "Components/Workspace";
 import DrawZone, {DrawZoneProps} from "Components/DrawZone";
 import ToolPanel, {ToolPanelProps} from "Components/ToolPanel";
+import FilePanel from "../FilePanel/index";
+import LayersPanel from "../LayersPanel/index";
 import BrushSettings, {TBrushSettings} from "../BrushSettings/index";
+import NewImageDialog from "../NewImageDialog/index";
+import ResizeDialog from "../ResizeDialog/index";
 
 // Stores, utils, libs
 import Color from "Utils/draw/Color";
@@ -13,13 +17,10 @@ import useLocalStorage from "Hooks/useLocalStorage";
 import {TTool} from "Constants/tools";
 import createEmptyImageData from "Utils/imageData/createEmptyImageData";
 import Vector from "Utils/geometry/Vector";
-import LayersPanel from "../LayersPanel/index";
+import resizeImageData from "Utils/imageData/resizeImageData";
 import useDrawZone from "../DrawZone/useDrawZone";
-import FilePanel from "../FilePanel/index";
-import ResizeDialog from "../ResizeDialog/index";
 import {useHistoryState} from "Hooks/useHistoryState";
 import useWindowEvent from "Hooks/useWindowEvent";
-import resizeImageData from "Utils/imageData/resizeImageData";
 
 const DEFAULT_FILENAME = "Без названия";
 
@@ -56,11 +57,12 @@ const Editor: React.FC<EditorProps> = (
 	}
 ) => {
 
-	const [stamp, setStamp, {undo, redo}] = useHistoryState({
+	const [stamp, setStamp, {undo, redo, reset: resetStamp}] = useHistoryState({
 		size: new Vector(800, 600),
 		layers: [{id: 0, imageData: createEmptyImageData(new Vector(800, 600))}]
 	});
 	const [isResizeOpen, setIsResizeOpen] = useState(false);
+	const [isNewImageOpen, setIsNewImageOpen] = useState(false);
 
 	const [activeLayerId, setActiveLayerId] = useState(0);
 
@@ -118,6 +120,9 @@ const Editor: React.FC<EditorProps> = (
 				if (action === "change-size") {
 					setIsResizeOpen(true);
 				}
+				if (action === "new-file") {
+					setIsNewImageOpen(true);
+				}
 			}}
 		/>
 		<StyledToolPanel
@@ -129,7 +134,9 @@ const Editor: React.FC<EditorProps> = (
 			onChangeColor={setColor}
 		/>
 		<WorkspaceWrapper>
-			<StyledWorkspace>
+			<StyledWorkspace
+				key={`${stamp.size.x}-${stamp.size.y}`}
+			>
 				<DrawZone
 					control={control}
 					width={stamp.size.x}
@@ -206,6 +213,23 @@ const Editor: React.FC<EditorProps> = (
 			defaultValues={{
 				width: stamp.size.x,
 				height: stamp.size.y
+			}}
+		/>
+		<NewImageDialog
+			open={isNewImageOpen}
+			onClose={({reset}) => {
+				setIsNewImageOpen(false);
+				reset();
+			}}
+			onSave={({name, width, height}, {reset}) => {
+				const size = new Vector(width, height);
+				resetStamp({
+					layers: [{id: 0, imageData: createEmptyImageData(size)}],
+					size: size,
+				});
+				setSavedFileName(name?.trim() || DEFAULT_FILENAME);
+				setIsNewImageOpen(false);
+				reset();
 			}}
 		/>
 	</Root>;

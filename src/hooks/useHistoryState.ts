@@ -15,13 +15,17 @@ const useHistoryState = <T>(initialValue: T) => {
 	}, []);
 
 	const undo = useCallback(() => {
-		if (historyRef.current.undoLength > 0) {
-			historyRef.current.undo();
-			const currentData = historyRef.current.currentData;
-			if (currentData) {
-				setState(currentData);
-			}
+		historyRef.current.undo();
+		const currentData = historyRef.current.currentData;
+		if (currentData) {
+			setState(currentData);
 		}
+	}, []);
+
+	const reset = useCallback((value: T) => {
+		historyRef.current.clear();
+		historyRef.current.add(value);
+		setState(value);
 	}, []);
 
 	useEffect(() => {
@@ -30,7 +34,7 @@ const useHistoryState = <T>(initialValue: T) => {
 		}
 	}, [state]);
 
-	return [state, setState, {redo, undo}] as const;
+	return [state, setState, {redo, undo, reset}] as const;
 };
 
 export {useHistoryState};
