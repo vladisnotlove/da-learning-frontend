@@ -14,6 +14,7 @@ import useDebounce from "Hooks/useDebounce";
 import {LazyBrush} from "lazy-brush";
 import {TControl} from "./useDrawZone";
 import downloadCanvas from "Utils/canvas/downloadCanvas";
+import useUpdatedRef from "Hooks/useUpdatedRef";
 
 const RIGHT_BUTTON = 0;
 
@@ -103,30 +104,14 @@ const DrawZone: React.FC<DrawZoneProps> = (
 	const activeLayer = useMemo(() => {
 		return layers.find(layer => layer.id === activeLayerId);
 	}, [layers, activeLayerId]);
+	const activeLayerRef = useUpdatedRef(activeLayer);
 
 	const inactiveLayers = useMemo(() => {
 		return layers.filter(layer => layer.id !== activeLayerId);
 	}, [layers, activeLayerId]);
+	const inactiveLayersRef = useUpdatedRef(inactiveLayers);
 
 	// helpers
-
-	const updateLayers = useDebounce(() => {
-		const ctx = canvasCtxRef.current;
-
-		if (ctx) {
-			const newLayers = layers.map(layer => {
-				if (layer.id === activeLayerId) {
-					return {
-						...layer,
-						imageData: ctx.getImageData(0, 0, width, height),
-					};
-				}
-				return layer;
-			});
-			onLayersUpdate(newLayers);
-		}
-	}, 200);
-
 
 	const drawBrush = () => {
 
@@ -210,9 +195,27 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		}
 	};
 
-	// effects
+	const triggerLayersUpdate = useDebounce(() => {
+		const ctx = canvasCtxRef.current;
 
-	useEffect(() => {
+		if (ctx) {
+			const newLayers = layers.map(layer => {
+				if (layer.id === activeLayerId) {
+					return {
+						...layer,
+						imageData: ctx.getImageData(0, 0, width, height),
+					};
+				}
+				return layer;
+			});
+			onLayersUpdate(newLayers);
+		}
+	}, 200);
+
+	const drawLayers = () => {
+		const activeLayer = activeLayerRef.current;
+		const inactiveLayers = inactiveLayersRef.current;
+
 		// draw active layer
 		const ctx = canvasCtxRef.current;
 		if (activeLayer && ctx) {
@@ -227,7 +230,18 @@ const DrawZone: React.FC<DrawZoneProps> = (
 				ctx.putImageData(layer.imageData, 0, 0);
 			}
 		});
+	};
+
+	// effects
+
+	useEffect(() => {
+		drawLayers();
 	}, [activeLayer, inactiveLayers]);
+
+	useEffect(() => {
+		drawLayers();
+		triggerLayersUpdate();
+	}, [width, height]);
 
 	useEffect(() => {
 		if (control) {
@@ -287,7 +301,7 @@ const DrawZone: React.FC<DrawZoneProps> = (
 		if (mode === "draw" || mode === "erase") {
 			if (event.button !== RIGHT_BUTTON) return;
 			if (isHoldRef.current) {
-				updateLayers();
+				triggerLayersUpdate();
 			}
 			isHoldRef.current = false;
 			prevPointsRef.current = new Queue();
@@ -298,11 +312,6 @@ const DrawZone: React.FC<DrawZoneProps> = (
 	return <>
 		<Root
 			className={className}
-			style={{
-				...(mode !== "nothing" && {
-					//cursor: "none",
-				})
-			}}
 			onMouseDown={event => {
 				if (mode === "draw" || mode === "erase") {
 					if (event.button !== RIGHT_BUTTON) return;

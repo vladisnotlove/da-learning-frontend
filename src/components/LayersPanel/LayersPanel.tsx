@@ -158,6 +158,10 @@ const LayerCard = styled("div")<{active?: boolean}>`
   cursor: pointer;
   overflow: hidden;
   
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
   &:before {
     content: "";
     position: absolute;

@@ -60,15 +60,16 @@ const LoginForm: React.FC<LoginFormProps> = (
 		>
 			{t("common:loginAsProcess")}
 		</DialogTitle>
-		<form
-			onSubmit={handleSubmit(data => {
-				onSubmit(data);
-			})}
-		>
-			<DialogContent>
+		<DialogContent>
+			<form
+				id={"loginDialog"}
+				onSubmit={handleSubmit(data => {
+					onSubmit(data);
+				})}
+			>
 				<Stack
 					flexDirection={"column"}
-					gap={2}
+					gap={1}
 				>
 					{apiErrors &&
 						<ApiErrors
@@ -83,6 +84,7 @@ const LoginForm: React.FC<LoginFormProps> = (
 						})}
 						error={!!formState.errors.username?.message}
 						helperText={formState.errors.username?.message}
+						margin={"dense"}
 					/>
 					<TextField
 						label={t("common:password")}
@@ -94,20 +96,22 @@ const LoginForm: React.FC<LoginFormProps> = (
 						})}
 						error={!!formState.errors.password?.message}
 						helperText={formState.errors.password?.message}
+						margin={"dense"}
 					/>
 				</Stack>
-			</DialogContent>
-			<DialogActions>
-				<Button
-					variant={"contained"}
-					size={"large"}
-					fullWidth
-					type={"submit"}
-				>
-					{t("common:login")}
-				</Button>
-			</DialogActions>
-		</form>
+			</form>
+		</DialogContent>
+		<DialogActions>
+			<Button
+				variant={"contained"}
+				size={"large"}
+				fullWidth
+				type={"submit"}
+				form={"loginDialog"}
+			>
+				{t("common:login")}
+			</Button>
+		</DialogActions>
 	</Dialog>;
 };
 

@@ -17,6 +17,7 @@ import Vector from "Utils/geometry/Vector";
 import LayersPanel from "../LayersPanel/index";
 import useDrawZone from "../DrawZone/useDrawZone";
 import FilePanel from "../FilePanel/index";
+import ResizeDialog from "../ResizeDialog/index";
 
 const DEFAULT_FILENAME = "Без названия";
 
@@ -52,7 +53,9 @@ const Editor: React.FC<EditorProps> = (
 		PaperProps,
 	}
 ) => {
-	const [size] = useState(new Vector(800, 600));
+	const [size, setSize] = useState(new Vector(800, 600));
+	const [isResizeOpen, setIsResizeOpen] = useState(false);
+
 	const [activeLayerId, setActiveLayerId] = useState(0);
 	const [layers, setLayers] = useState<TDrawZoneLayer[]>([{id: 0, imageData: createEmptyImageData(size)}]);
 
@@ -73,9 +76,11 @@ const Editor: React.FC<EditorProps> = (
 	);
 
 	const {control, downloadImage} = useDrawZone();
+
 	const [fileName, setFileName] = useState(DEFAULT_FILENAME);
 	const [savedFileName, setSavedFileName] = useState(DEFAULT_FILENAME);
 	const [isEditing, setIsEditing] = useState(false);
+
 
 	return <Root
 		className={className}
@@ -93,6 +98,9 @@ const Editor: React.FC<EditorProps> = (
 			onAction={(action) => {
 				if (action === "download") {
 					downloadImage(fileName);
+				}
+				if (action === "change-size") {
+					setIsResizeOpen(true);
 				}
 			}}
 		/>
@@ -148,8 +156,21 @@ const Editor: React.FC<EditorProps> = (
 			activeLayerId={activeLayerId}
 			onLayersChange={setLayers}
 			onLayerSelect={layer => {
-				console.log(layer);
 				setActiveLayerId(layer.id);
+			}}
+		/>
+		<ResizeDialog
+			open={isResizeOpen}
+			onClose={() => {
+				setIsResizeOpen(false);
+			}}
+			onSave={({width, height}) => {
+				setIsResizeOpen(false);
+				setSize(new Vector(width, height));
+			}}
+			defaultValues={{
+				width: size.x,
+				height: size.y
 			}}
 		/>
 	</Root>;

@@ -1,6 +1,6 @@
-import React from "react";
-import {Button, IconButton, Paper, styled} from "@mui/material";
-import {Download} from "@mui/icons-material";
+import React, {useRef, useState} from "react";
+import {Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, styled} from "@mui/material";
+import {Add, Download, Photo} from "@mui/icons-material";
 import AutosizeInput from "react-input-autosize";
 
 
@@ -12,7 +12,7 @@ type FilePanelProps = {
 	onEditStart: () => void,
 	onChange: (fileName: string) => void,
 	onEditEnd: (fileName: string) => void,
-	onAction: (action: "download") => void,
+	onAction: (action: "download" | "new-file" | "change-size") => void,
 }
 
 const FilePanel: React.FC<FilePanelProps> = (
@@ -26,22 +26,51 @@ const FilePanel: React.FC<FilePanelProps> = (
 		onAction,
 	}
 ) => {
+	const fileBtnRef = useRef<HTMLButtonElement | null>(null);
+	const [open, setOpen] = useState(false);
+
 	return <Root
 		className={className}
 		variant={"outlined"}
 	>
 		<MainActions>
 			<Button
+				ref={fileBtnRef}
 				variant={"text"}
 				style={{
 					minWidth: 0,
 				}}
 				onClick={() => {
-					onAction("download");
+					setOpen(true);
 				}}
 			>
 				Файл
 			</Button>
+			<Menu
+				open={open}
+				anchorEl={fileBtnRef.current}
+				onClose={() => setOpen(false)}
+				elevation={5}
+			>
+				<MenuItem
+					onClick={() => {
+						onAction("new-file");
+						setOpen(false);
+					}}
+				>
+					<ListItemIcon><Add /></ListItemIcon>
+					<ListItemText>Новый</ListItemText>
+				</MenuItem>
+				<MenuItem
+					onClick={() => {
+						onAction("change-size");
+						setOpen(false);
+					}}
+				>
+					<ListItemIcon><Photo /></ListItemIcon>
+					<ListItemText>Размер холста</ListItemText>
+				</MenuItem>
+			</Menu>
 		</MainActions>
 		<FileContainer>
 			<File>
