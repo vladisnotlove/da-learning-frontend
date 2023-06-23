@@ -50,25 +50,27 @@ const PageLayout: React.FC<PageLayoutProps> = (
 	return <PageLayoutRoot
 		className={className}
 	>
-		<Bar color={""}>
-			{isNavigationCollapsed &&
-				<BurgerNavigation
-					navItems={navItems}
+		<Bar>
+			<BarInner>
+				{isNavigationCollapsed &&
+					<BurgerNavigation
+						navItems={navItems}
+						attach={"left-right"}
+					/>
+				}
+				<StyledLogo />
+				<NavigationContainer
+					ref={navigationContainerRef}
+				>
+					<Navigation
+						navItems={navItems}
+						invisible={isNavigationCollapsed}
+					/>
+				</NavigationContainer>
+				<ProfileWidget
 					attach={"left-right"}
 				/>
-			}
-			<StyledLogo />
-			<NavigationContainer
-				ref={navigationContainerRef}
-			>
-				<Navigation
-					navItems={navItems}
-					invisible={isNavigationCollapsed}
-				/>
-			</NavigationContainer>
-			<ProfileWidget
-				attach={"left-right"}
-			/>
+			</BarInner>
 		</Bar>
 		{fullSizeContent ?
 			<FullSizeContent>
@@ -88,15 +90,17 @@ const PageLayoutRoot = styled("div")(() => ({
 	alignItems: "stretch",
 }));
 
-const Bar = styled(Container)(({theme}) => ({
+const Bar = styled("div")`
+  background: ${p => p.theme.palette.background.header};
+`;
+
+const BarInner = styled(Container)(({theme}) => ({
 	display: "flex",
 	flexDirection: "row",
 	alignItems: "center",
 	gap: theme.spacing(2),
 	height: theme.spacing(6),
 	color: theme.palette.primary.contrastText,
-
-	background: theme.palette.background.header,
 }));
 
 const StyledLogo = styled(Logo)({

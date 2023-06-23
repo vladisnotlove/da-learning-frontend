@@ -64,8 +64,13 @@ theme = createTheme({
 			},
 			styleOverrides: {
 				root: {
-					padding: theme.spacing(0, 3),
-				}
+					paddingLeft: theme.spacing(1.75),
+					paddingRight: theme.spacing(1.75),
+					"@media (min-width: 600px)": {
+						paddingLeft: theme.spacing(1.75),
+						paddingRight: theme.spacing(1.75),
+					}
+				},
 			}
 		},
 		MuiAvatar: {
