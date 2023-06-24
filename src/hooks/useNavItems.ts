@@ -10,17 +10,13 @@ const useNavItems = () => {
 	const profile = useProfile();
 
 	return useMemo<PageLayoutProps["navItems"]>(() => {
-		return [
+		const navItems = [
 			{
 				label: t("common:editor"),
 				href: routes.editor(),
 			},
-		].concat(profile.data?.roles?.find(role => role === "teacher") ? [
-			{
-				label: t("common:courses"),
-				href: routes.courses(),
-			}
-		] : []);
+		];
+		return navItems;
 	}, [
 		t,
 		profile.data

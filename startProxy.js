@@ -9,7 +9,7 @@ const proxyToFront = createProxyMiddleware({
 });
 
 const proxyToBack = createProxyMiddleware({
-	target: "http://localhost:8000",
+	target: "http://127.0.0.1:8000",
 });
 
 const app = express();
@@ -17,6 +17,7 @@ const app = express();
 app.use("/api", proxyToBack);
 app.use("/admin", proxyToBack);
 app.use("/static", proxyToBack);
+app.use("/media", proxyToBack);
 app.use("/", proxyToFront);
 
 app.listen(PORT);
