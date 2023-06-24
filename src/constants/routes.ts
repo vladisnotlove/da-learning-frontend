@@ -1,13 +1,11 @@
 export type TRouteParams = {
-	courses: {
-		id?: number
-	}
+//
 }
 
 const routes = {
 	index: () => "/",
 	editor: () => "/editor",
-	courses: ({id}: TRouteParams["courses"] = {}) => id === undefined ? "/courses" : "/courses/" + id,
+	concepts: () => "/concepts",
 };
 
 export default routes;

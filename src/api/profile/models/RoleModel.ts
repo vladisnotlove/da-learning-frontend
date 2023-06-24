@@ -1,3 +1,3 @@
-type RoleModel = "teacher" | "student";
+type RoleModel = "teacher" | "student" | "classic_student";
 
 export default RoleModel;

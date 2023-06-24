@@ -10,12 +10,20 @@ const useNavItems = () => {
 	const profile = useProfile();
 
 	return useMemo<PageLayoutProps["navItems"]>(() => {
+		const roles = profile.data?.roles || [];
+
 		const navItems = [
 			{
 				label: t("common:editor"),
 				href: routes.editor(),
 			},
 		];
+		if (roles.includes("teacher") || roles.includes("student") || roles.includes("classic_student")) {
+			navItems.push({
+				label: t("common:concepts"),
+				href: routes.concepts(),
+			});
+		}
 		return navItems;
 	}, [
 		t,

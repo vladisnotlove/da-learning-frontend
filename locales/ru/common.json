@@ -6,7 +6,7 @@
 		"minLength_many": "Минимальная длина - {{count}} символов",
 		"minLength_one": "Минимальная длина - {{count}} символ"
 	},
-	"courses": "Курсы",
+	"concepts": "Концепции",
 	"editor": "Редактор",
 	"login": "Войти",
 	"loginAsField": "Логин",
