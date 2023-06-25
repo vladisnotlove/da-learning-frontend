@@ -1,14 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
-
-// Components
 import Logo from "Components/@common/Logo";
 import Navigation from "./Navigation";
 import BurgerNavigation from "Components/@layout/PageLayout/BurgerNavigation";
 import ProfileWidget from "Components/@common/ProfileWidget";
 import {styled, Container} from "@mui/material";
 
-// Stores, utils, libs
-
+export const headerHeight_sp = 6;
 
 export type PageLayoutProps = {
 	className?: string,
@@ -99,7 +96,7 @@ const BarInner = styled(Container)(({theme}) => ({
 	flexDirection: "row",
 	alignItems: "center",
 	gap: theme.spacing(2),
-	height: theme.spacing(6),
+	height: theme.spacing(headerHeight_sp),
 	color: theme.palette.primary.contrastText,
 }));
 
@@ -120,14 +117,9 @@ const Content = styled(Container)(({theme}) => ({
 	paddingBottom: theme.spacing(2),
 }));
 
-const FullSizeContent = styled("div")(() => ({
-	flexGrow: 1,
-	display: "flex",
-	flexDirection: "column",
-
-	"&>*:first-child": {
-		flexGrow: 1,
-	}
+const FullSizeContent = styled("div")(({theme}) => ({
+	height: `calc(100vh - ${theme.spacing(headerHeight_sp)})`,
+	width: "100vw",
 }));
 
 export default PageLayout;
