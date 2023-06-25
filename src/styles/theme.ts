@@ -1,4 +1,5 @@
 import {createTheme} from "@mui/material";
+import type {} from "@mui/lab/themeAugmentation";
 
 let theme = createTheme({
 	palette: {

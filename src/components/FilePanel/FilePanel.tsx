@@ -1,7 +1,7 @@
 import React, {useRef, useState} from "react";
 import {Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, styled} from "@mui/material";
 import {Add, Download, Photo} from "@mui/icons-material";
-import AutosizeInput from "react-input-autosize";
+import AutosizeInput from "react-18-input-autosize";
 
 
 type FilePanelProps = {
