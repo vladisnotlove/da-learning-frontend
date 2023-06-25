@@ -4,9 +4,10 @@ import {handleApiCatch, TApiErrors} from "Api/@core/errors";
 import {put} from "Api/@core/methods";
 import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
+import {PartialExcept} from "src/types/CustomUtilityTypes";
 
 type TPutRequirementResponse = RequirementModel;
-type TPutRequirementBody = Partial<Pick<RequirementModel, "concept" | "required_concept">> & Pick<RequirementModel, "id">;
+type TPutRequirementBody = PartialExcept<RequirementModel, "id">;
 type TPutRequirementError = TApiErrors<keyof TPutRequirementBody>;
 
 const usePutRequirement = () => {

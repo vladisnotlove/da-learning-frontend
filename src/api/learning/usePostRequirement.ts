@@ -6,7 +6,7 @@ import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
 
 type TPostRequirementResponse = RequirementModel;
-type TPostRequirementBody = Pick<RequirementModel, "concept" | "required_concept">;
+export type TPostRequirementBody = Pick<RequirementModel, "concept" | "required_concept">;
 type TPostRequirementError = TApiErrors<keyof TPostRequirementBody>;
 
 const usePostRequirement = () => {

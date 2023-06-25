@@ -4,9 +4,10 @@ import {handleApiCatch, TApiErrors} from "Api/@core/errors";
 import {putFormData} from "Api/@core/methods";
 import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
+import {PartialExcept} from "src/types/CustomUtilityTypes";
 
 type TPutConceptResponse = ConceptModel;
-type TPutConceptBody = Partial<Pick<ConceptModel, "name" | "poster" | "description">> & Pick<ConceptModel, "id">;
+export type TPutConceptBody = PartialExcept<ConceptModel, "id">
 type TPutConceptError = TApiErrors<keyof Omit<TPutConceptBody, "id">>;
 
 const usePutConcept = () => {

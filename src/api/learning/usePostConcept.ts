@@ -6,7 +6,7 @@ import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
 
 type TPostConceptResponse = ConceptModel;
-type TPostConceptBody = Pick<ConceptModel, "name" | "poster" | "description">;
+export type TPostConceptBody = Pick<ConceptModel, "name" | "poster" | "description">;
 type TPostConceptError = TApiErrors<keyof TPostConceptBody>;
 
 const usePostConcept = () => {
