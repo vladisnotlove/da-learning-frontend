@@ -5,6 +5,7 @@ type ConceptModel = {
 	description?: string,
 	x: number,
 	y: number,
+	status: "new" | "actual" | "deleted"
 }
 
 export default ConceptModel;
