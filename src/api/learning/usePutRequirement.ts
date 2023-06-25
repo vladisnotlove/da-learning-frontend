@@ -6,7 +6,7 @@ import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
 import {PartialExcept} from "src/types/CustomUtilityTypes";
 
-type TPutRequirementResponse = RequirementModel;
+type TPutRequirementResponse = undefined;
 type TPutRequirementBody = PartialExcept<RequirementModel, "id">;
 type TPutRequirementError = TApiErrors<keyof TPutRequirementBody>;
 
