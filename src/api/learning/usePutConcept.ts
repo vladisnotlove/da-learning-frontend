@@ -1,7 +1,7 @@
 import {useMutation, useQueryClient} from "react-query";
 import ConceptModel from "Api/learning/models/ConceptModel";
 import {handleApiCatch, TApiErrors} from "Api/@core/errors";
-import {putFormData} from "Api/@core/methods";
+import {put} from "Api/@core/methods";
 import urls from "Api/urls";
 import queryKeys from "Api/queryKeys";
 import {PartialExcept} from "src/types/CustomUtilityTypes";
@@ -15,7 +15,7 @@ const usePutConcept = () => {
 
 	return useMutation<TPutConceptResponse, TPutConceptError, TPutConceptBody>(variables => {
 		const {id, ...body} = variables;
-		return putFormData<TPutConceptResponse>(urls.learningConcepts(id), body)
+		return put<TPutConceptResponse>(urls.learningConcepts(id), body)
 			.then(value => {
 				queryClient.invalidateQueries(queryKeys.learningConcepts());
 				return value.data;
