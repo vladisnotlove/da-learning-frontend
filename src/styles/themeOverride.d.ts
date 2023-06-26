@@ -2,7 +2,7 @@
 import {Typography, TypographyOptions, TypographyStyleOptions} from "@mui/material/styles/createTypography";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {TypeBackground} from "@mui/material/styles/createPalette";
+import {TypeBackground, TypeText} from "@mui/material/styles/createPalette";
 
 declare module "@mui/material/styles/createTypography" {
 	export interface TypographyOptions {
@@ -15,6 +15,10 @@ declare module "@mui/material/styles/createTypography" {
 }
 
 declare module "@mui/material/styles/createPalette" {
+	export interface TypeText {
+		moreSecondary: string,
+	}
+
 	export interface TypeBackground {
 		lower1: string,
 		header: string,

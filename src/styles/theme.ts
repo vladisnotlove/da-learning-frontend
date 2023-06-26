@@ -7,7 +7,8 @@ let theme = createTheme({
 			main: "#3b67c5"
 		},
 		text: {
-			secondary: "rgba(0,0,0,0.5)"
+			secondary: "rgba(0,0,0,0.64)",
+			moreSecondary: "rgba(0,0,0,0.32)"
 		},
 		background: {
 			lower1: "rgba(0,0,0,0.06)",
