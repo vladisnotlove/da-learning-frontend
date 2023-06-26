@@ -6,6 +6,8 @@
 		"minLength_many": "Минимальная длина - {{count}} символов",
 		"minLength_one": "Минимальная длина - {{count}} символ"
 	},
+	"cancel": "Отмена",
+	"confirm": "Подтвердить",
 	"concepts": "Концепции",
 	"editor": "Редактор",
 	"login": "Войти",
