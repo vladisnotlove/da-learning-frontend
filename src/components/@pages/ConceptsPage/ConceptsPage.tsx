@@ -12,6 +12,7 @@ import usePostConcept from "Api/learning/usePostConcept";
 import usePutConcepts from "Api/learning/usePutConcepts";
 import usePostRequirement from "Api/learning/usePostRequirement";
 import usePutRequirements from "Api/learning/usePutRequirements";
+import useTranslation from "next-translate/useTranslation";
 
 // helpers
 
@@ -36,6 +37,7 @@ const prepareRequirementsToSave = (requirements: RequirementModel[]) => {
 // main
 
 const EditorPage = () => {
+	const {t} = useTranslation();
 	const navItems = useNavItems();
 
 	const [editing, setEditing] = useState(false);
@@ -100,7 +102,7 @@ const EditorPage = () => {
 							loading={saving}
 							disabled={saving}
 						>
-							Сохранить
+							{t("common:save")}
 						</LoadingButton>
 						<Button
 							variant={"outlined"}
@@ -109,7 +111,7 @@ const EditorPage = () => {
 							}}
 							disabled={saving}
 						>
-							Отменить
+							{t("common:cancel")}
 						</Button>
 					</>
 				}

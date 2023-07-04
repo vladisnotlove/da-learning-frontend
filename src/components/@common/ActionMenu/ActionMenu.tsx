@@ -79,6 +79,7 @@ const ActionMenu: React.FC<ActionMenuProps> = (
 					onClick={() => {
 						if (action.onClick) action.onClick();
 						if (onSelect) onSelect(action);
+						closeMenu();
 					}}
 					{...action.MenuItemProps}
 				>

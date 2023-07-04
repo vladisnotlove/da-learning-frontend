@@ -7,12 +7,22 @@
 		"minLength_one": "Минимальная длина - {{count}} символ"
 	},
 	"cancel": "Отмена",
+	"create": "Создать",
 	"confirm": "Подтвердить",
-	"concepts": "Концепции",
+	"chooseFile": "Выбрать файл",
+	"delete": "Удалить",
+	"dropHere": "Перетащить сюда",
 	"editor": "Редактор",
+	"learningMap": "Карта обучения",
 	"login": "Войти",
 	"loginAsField": "Логин",
 	"loginAsProcess": "Вход",
 	"logout": "Выйти",
-	"password": "Пароль"
+	"name": "Название",
+	"new": "Новый",
+	"newFile": "Новый файл",
+	"or": "Или",
+	"password": "Пароль",
+	"save": "Сохранить",
+	"uploadImage": "Загрузить изображение"
 }

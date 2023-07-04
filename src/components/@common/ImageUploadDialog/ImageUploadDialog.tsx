@@ -4,6 +4,7 @@ import ApiErrors from "Components/@common/ApiErrors";
 import ImagePreview from "Components/@common/ImagePreview/ImagePreview";
 import DropZone from "Components/@common/DropZone/DropZone";
 import useUploadImage from "Api/media/useUploadImage";
+import useTranslation from "next-translate/useTranslation";
 
 
 type ImageUploadDialogProps = {
@@ -22,6 +23,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = (
 		onClose,
 	}
 ) => {
+	const {t} = useTranslation();
 	const {
 		mutate: upload,
 		isLoading: loading,
@@ -40,7 +42,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = (
 		}}
 	>
 		<DialogTitle>
-			{"Загрузить изображение"}
+			{t("common:uploadImage")}
 		</DialogTitle>
 		<DialogContent>
 			{errors && Object.values(errors).length > 0 &&
@@ -73,6 +75,14 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = (
 		</DialogContent>
 		<DialogActions>
 			<Button
+				onClick={onClose}
+				variant={"text"}
+				color={"inherit"}
+				disabled={loading}
+			>
+				{t("common:cancel")}
+			</Button>
+			<Button
 				onClick={() => {
 					if (file) {
 						upload({
@@ -87,14 +97,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = (
 				variant={"contained"}
 				disabled={loading || !file}
 			>
-				{"Сохранить"}
-			</Button>
-			<Button
-				variant={"text"}
-				color={"inherit"}
-				disabled={loading}
-			>
-				{"Отмена"}
+				{t("common:save")}
 			</Button>
 		</DialogActions>
 	</Dialog>;

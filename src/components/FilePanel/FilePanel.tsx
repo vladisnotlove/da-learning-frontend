@@ -2,6 +2,7 @@ import React, {useRef, useState} from "react";
 import {Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, styled} from "@mui/material";
 import {Add, Download, Photo} from "@mui/icons-material";
 import AutosizeInput from "react-18-input-autosize";
+import useTranslation from "next-translate/useTranslation";
 
 
 type FilePanelProps = {
@@ -26,6 +27,7 @@ const FilePanel: React.FC<FilePanelProps> = (
 		onAction,
 	}
 ) => {
+	const {t} = useTranslation();
 	const fileBtnRef = useRef<HTMLButtonElement | null>(null);
 	const [open, setOpen] = useState(false);
 
@@ -59,7 +61,7 @@ const FilePanel: React.FC<FilePanelProps> = (
 					}}
 				>
 					<ListItemIcon><Add /></ListItemIcon>
-					<ListItemText>Новый</ListItemText>
+					<ListItemText>{t("common:new")}</ListItemText>
 				</MenuItem>
 				<MenuItem
 					onClick={() => {
@@ -68,7 +70,7 @@ const FilePanel: React.FC<FilePanelProps> = (
 					}}
 				>
 					<ListItemIcon><Photo /></ListItemIcon>
-					<ListItemText>Размер холста</ListItemText>
+					<ListItemText>{t("editor:canvasSize")}</ListItemText>
 				</MenuItem>
 			</Menu>
 		</MainActions>

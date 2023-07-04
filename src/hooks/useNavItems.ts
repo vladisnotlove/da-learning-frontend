@@ -20,7 +20,7 @@ const useNavItems = () => {
 		];
 		if (roles.includes("teacher") || roles.includes("student") || roles.includes("classic_student")) {
 			navItems.push({
-				label: t("common:concepts"),
+				label: t("common:learningMap"),
 				href: routes.concepts(),
 			});
 		}

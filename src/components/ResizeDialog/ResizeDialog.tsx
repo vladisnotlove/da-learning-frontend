@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import {Controller, useForm} from "react-hook-form";
 import {Height} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
 
 const parseNumberValue = (value: string) => {
 	const num = parseFloat(value);
@@ -44,6 +45,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 		defaultValues,
 	}
 ) => {
+	const {t} = useTranslation();
 	const {control, handleSubmit, reset} = useForm<TResizeValues>({defaultValues});
 
 	return <Dialog
@@ -51,7 +53,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 		className={className}
 	>
 		<DialogTitle>
-			Изменение размера холста
+			{t("editor:canvasResizing")}
 		</DialogTitle>
 		<DialogContent>
 			<Form
@@ -66,7 +68,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 					render={({field, fieldState}) => {
 						return <TextField
 							type="number"
-							label={"Ширина"}
+							label={t("editor:width")}
 							margin="dense"
 							InputProps={{
 								startAdornment: (
@@ -79,6 +81,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 							value={field.value}
 							onChange={(e) => {
 								const value = parseNumberValue(e.target.value);
+								// @ts-ignore
 								field.onChange(value);
 							}}
 							error={!!fieldState.error}
@@ -86,10 +89,10 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 						/>;
 					}}
 					rules={{
-						required: "Обязательное поле",
+						required: t("common:@messages.fieldIsRequired"),
 						min: {
 							value: 100,
-							message: "Минимальная ширина 100px"
+							message: t("editor:@messages.minWidth", {count: 100}),
 						},
 					}}
 				/>
@@ -99,7 +102,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 					render={({field, fieldState}) => {
 						return <TextField
 							type="number"
-							label={"Высота"}
+							label={t("editor:height")}
 							margin="dense"
 							InputProps={{
 								startAdornment: (
@@ -112,6 +115,7 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 							value={field.value}
 							onChange={(e) => {
 								const value = parseNumberValue(e.target.value);
+								// @ts-ignore
 								field.onChange(value);
 							}}
 							error={!!fieldState.error}
@@ -119,10 +123,10 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 						/>;
 					}}
 					rules={{
-						required: "Обязательное поле",
+						required: t("common:@messages.fieldIsRequired"),
 						min: {
 							value: 100,
-							message: "Минимальная высота 100px"
+							message: t("editor:@messages.minHeight", {count: 100}),
 						},
 					}}
 				/>
@@ -132,14 +136,14 @@ const ResizeDialog: React.FC<ResizeDialogProps> = (
 			<Button variant={"text"} onClick={() => {
 				onClose({reset});
 			}}>
-				Отмена
+				{t("common:cancel")}
 			</Button>
 			<Button
 				variant={"contained"}
 				type={"submit"}
 				form={"resizeDialog"}
 			>
-				Сохранить
+				{t("common:save")}
 			</Button>
 		</DialogActions>
 	</Dialog>;

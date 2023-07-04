@@ -18,6 +18,9 @@ import ConceptNode, {ConceptNodeProps} from "./ConceptNode";
 import DeletableEdge, {DeletableEdgeProps} from "./DeletableEdge";
 import ConfirmDialog from "Components/@common/ConfirmDialog";
 import {LoadingButton} from "@mui/lab";
+import ImageUploadDialog from "Components/@common/ImageUploadDialog";
+import {MoreHoriz} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
 
 // helpers
 
@@ -75,10 +78,12 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 		disable = {},
 	}
 ) => {
+	const {t} = useTranslation();
 	const rootRef = useRef<HTMLDivElement | null>(null);
 	const viewport = useViewport();
 
 	const [deletionOpened, setDeletionOpened] = useState(false);
+	const [conceptPosterOpened, setConceptPosterOpened] = useState(false);
 	const [activeConcept, setActiveConcept] = useState<ConceptModel | null>(null);
 
 	const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
@@ -101,7 +106,8 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 					if (onConceptsChange) onConceptsChange(newConcepts);
 				},
 				onPosterClick: () => {
-					console.log("poster " + concept.id);
+					setConceptPosterOpened(true);
+					setActiveConcept(concept);
 				},
 				editable: !disable.conceptsChange,
 				deletable: !disable.conceptsChange,
@@ -109,6 +115,7 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 			position: {x: concept.x, y: concept.y},
 			sourcePosition: Position.Bottom,
 			dragHandle: ".custom-drag-handle",
+			hidden: concept.status === "deleted",
 		}));
 	}, [concepts]);
 
@@ -136,6 +143,7 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 				type: MarkerType.Arrow,
 			},
 			selected: selectedEdge === ("" + requirement.id),
+			hidden: requirement.status === "deleted",
 		}));
 	}, [requirements, selectedEdge]);
 
@@ -148,29 +156,34 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 				<Loading/>
 			}
 			{!loading && !disable.conceptCreate &&
-				<AddBtn
-					variant={"contained"}
-					onClick={() => {
-						const root = rootRef.current;
-						if (root) {
-							const viewportSize = {
-								x: root.clientWidth,
-								y: root.clientHeight,
-							};
+				<RightTools>
+					<ToolBtn
+						variant={"contained"}
+						onClick={() => {
+							const root = rootRef.current;
+							if (root) {
+								const viewportSize = {
+									x: root.clientWidth,
+									y: root.clientHeight,
+								};
 
-							if (onConceptCreate) onConceptCreate({
-								name: "Новая концепция",
-								x: -viewport.x / viewport.zoom + viewportSize.x / viewport.zoom * 0.5,
-								y: -viewport.y / viewport.zoom + viewportSize.y / viewport.zoom * 0.5,
-								status: "new",
-							});
-						}
-					}}
-					loading={creatingConcept}
-					disabled={creatingConcept}
-				>
-					+ Добавить концепцию
-				</AddBtn>
+								if (onConceptCreate) onConceptCreate({
+									name: t("learning:newConcept"),
+									x: -viewport.x / viewport.zoom + viewportSize.x / viewport.zoom * 0.5,
+									y: -viewport.y / viewport.zoom + viewportSize.y / viewport.zoom * 0.5,
+									status: "new",
+								});
+							}
+						}}
+						loading={creatingConcept}
+						disabled={creatingConcept}
+					>
+						+ {t("learning:addConcept")}
+					</ToolBtn>
+					<ToolBtn variant={"contained"}>
+						<MoreHoriz/>
+					</ToolBtn>
+				</RightTools>
 			}
 			<ReactFlow
 				snapToGrid={true}
@@ -242,10 +255,10 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 		</Root>
 		<ConfirmDialog
 			content={{
-				title: "Удаление концепции",
-				description: "Вы уверены, что хотите удалить концепцию?",
+				title: t("learning:conceptDeleting"),
+				description: t("learning:areYouSureYouWantToDeleteConcept"),
 				ConfirmBtnProps: {
-					children: "Удалить"
+					children: t("common:delete")
 				}
 			}}
 			open={deletionOpened}
@@ -276,6 +289,27 @@ const ConceptGraphInner: React.FC<ConceptGraphInnerProps> = (
 				setActiveConcept(null);
 			}}
 		/>
+		<ImageUploadDialog
+			key={activeConcept?.id || ""}
+			open={conceptPosterOpened}
+			onUploadSuccess={imageUrl => {
+				if (onConceptsChange && activeConcept) onConceptsChange(
+					concepts.map(item => {
+						if (item.id === activeConcept.id) return {
+							...item,
+							poster: imageUrl,
+						};
+						return item;
+					})
+				);
+				setConceptPosterOpened(false);
+				setActiveConcept(null);
+			}}
+			onClose={() => {
+				setConceptPosterOpened(false);
+				setActiveConcept(null);
+			}}
+		/>
 	</>;
 };
 
@@ -300,14 +334,21 @@ const Loading = styled(
   z-index: 10;
 `;
 
-const AddBtn = styled(LoadingButton)`
+const RightTools = styled("div")`
   position: absolute;
   top: ${p => p.theme.spacing(1.5)};
   right: ${p => p.theme.spacing(1.5)};
   z-index: 10;
+  
+  display: flex;
+  gap: ${p => p.theme.spacing(1)};
+`;
+
+const ToolBtn = styled(LoadingButton)`
   background: #fff;
   color: ${p => p.theme.palette.text.primary};
   border: 1px solid ${p => p.theme.palette.divider};
+  min-width: 0;
   
   &:hover {
     background: #eee;

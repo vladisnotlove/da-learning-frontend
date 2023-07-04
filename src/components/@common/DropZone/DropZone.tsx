@@ -2,6 +2,7 @@ import React from "react";
 import InputFile from "Components/@common/InputFile";
 import {styled} from "@mui/material";
 import {InputFileProps} from "Components/@common/InputFile/InputFile";
+import useTranslation from "next-translate/useTranslation";
 
 type DropZoneProps = Pick<InputFileProps, "onChange" | "accept" | "multiple"> & {
 	className?: string,
@@ -16,13 +17,15 @@ const DropZone: React.FC<DropZoneProps> = (
 		multiple,
 	}
 ) => {
+	const {t} = useTranslation();
+
 	return <Root
 		className={className}
 	>
 		<Hint>
-			<span>Выбрать файл</span>
-			<span>или</span>
-			<span>перетащить сюда</span>
+			<span>{t("common:chooseFile")}</span>
+			<span>{t("common:or")}</span>
+			<span>{t("common:dropHere")}</span>
 		</Hint>
 		<StyledInputFile
 			onChange={onChange}

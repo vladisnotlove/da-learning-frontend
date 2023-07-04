@@ -2,6 +2,7 @@ import React from "react";
 import {Collapse, IconButton, Slider, styled, Typography} from "@mui/material";
 import Window from "../@common/Window/index";
 import {ExpandLess} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 100;
@@ -41,11 +42,12 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 		onExpand,
 	}
 ) => {
+	const {t} = useTranslation();
 	const {size, smooth, friction} = settings;
 
 	return <Window
 		className={className}
-		title={"Настройки кисти"}
+		title={t("editor:brushSettings")}
 		action={
 			<IconButton
 				onClick={() => {
@@ -75,7 +77,7 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 				{/* size */}
 				<Prop>
 					<Typography variant={"body2"}>
-						Размер
+						{t("editor:size")}
 					</Typography>
 					<PropBody>
 						<StyledSlider
@@ -99,7 +101,7 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 				{/* smooth */}
 				<Prop>
 					<Typography variant={"body2"}>
-						Радиус сглаживание
+						{t("editor:smoothRadius")}
 					</Typography>
 					<PropBody>
 						<StyledSlider
@@ -123,7 +125,7 @@ const BrushSettings: React.FC<BrushSettingsProps> = (
 				{/* Friction */}
 				<Prop>
 					<Typography variant={"body2"}>
-						Трение
+						{t("editor:friction")}
 					</Typography>
 					<PropBody>
 						<StyledSlider

@@ -1,7 +1,7 @@
 import React, {memo} from "react";
 import ConceptModel from "Api/learning/models/ConceptModel";
 import {Handle, NodeProps, Position} from "reactflow";
-import {Paper, styled} from "@mui/material";
+import {Paper, styled, Typography} from "@mui/material";
 import {TextareaAutosize} from "@mui/base";
 import ImageIcon from "@mui/icons-material/Image";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
@@ -57,6 +57,9 @@ const ConceptNode: React.FC<ConceptNodeProps> = (
 					disabled={!data.deletable}
 				/>
 			</Header>
+			<Typography color={"text.moreSecondary"} mt={0.5}>
+				Уроки(0)
+			</Typography>
 		</Main>
 		{data.editable &&
 			<CustomDragHandle
@@ -168,6 +171,10 @@ const NameTextarea = styled(TextareaAutosize)`
 
   &:focus {
     outline: 1px solid ${p => p.theme.palette.primary.main};
+  }
+  
+  &:disabled {
+	color: #000;
   }
 `;
 

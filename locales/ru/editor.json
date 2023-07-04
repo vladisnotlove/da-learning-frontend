@@ -1,0 +1,15 @@
+{
+	"@messages": {
+		"minHeight": "Минимальная высота - {{count}}px",
+		"minWidth": "Минимальная ширина - {{count}}px"
+	},
+	"brushSettings": "Настройки кисти",
+	"canvasResizing": "Изменение размера холста",
+	"canvasSize": "Размер холста",
+	"friction": "Трение",
+	"height": "Высота",
+	"noName": "Без названия",
+	"size": "Размер",
+	"smoothRadius": "Радиус сглаживание",
+	"width": "Ширина"
+}

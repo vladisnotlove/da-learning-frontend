@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import {Controller, useForm} from "react-hook-form";
 import {Height} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
 
 const parseNumberValue = (value: string) => {
 	const num = parseFloat(value);
@@ -43,20 +44,26 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 		onSave,
 		onClose,
 		defaultValues = {
-			name: "Без названия",
 			width: 1280,
 			height: 720,
 		},
 	}
 ) => {
-	const {control, handleSubmit, reset} = useForm<TNewImageValues>({defaultValues});
+	const {t} = useTranslation();
+
+	const {control, handleSubmit, reset} = useForm<TNewImageValues>({
+		defaultValues: {
+			name: t("editor:noName"),
+			...defaultValues,
+		}
+	});
 
 	return <Dialog
 		open={open}
 		className={className}
 	>
 		<DialogTitle>
-			Новый файл
+			{t("common:newFile")}
 		</DialogTitle>
 		<DialogContent>
 			<Form
@@ -70,7 +77,7 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 					control={control}
 					render={({field, fieldState}) => {
 						return <TextField
-							label={"Название"}
+							label={t("common:name")}
 							margin="dense"
 
 							value={field.value}
@@ -86,7 +93,7 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 					render={({field, fieldState}) => {
 						return <TextField
 							type="number"
-							label={"Ширина"}
+							label={t("editor:width")}
 							margin="dense"
 							InputProps={{
 								startAdornment: (
@@ -99,6 +106,7 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 							value={field.value}
 							onChange={(e) => {
 								const value = parseNumberValue(e.target.value);
+								// @ts-ignore
 								field.onChange(value);
 							}}
 							error={!!fieldState.error}
@@ -106,10 +114,10 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 						/>;
 					}}
 					rules={{
-						required: "Обязательное поле",
+						required: t("common:@messages.fieldIsRequired"),
 						min: {
 							value: 100,
-							message: "Минимальная ширина 100px"
+							message: t("editor:@messages.minWidth", {count: 100}),
 						},
 					}}
 				/>
@@ -119,7 +127,7 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 					render={({field, fieldState}) => {
 						return <TextField
 							type="number"
-							label={"Высота"}
+							label={t("editor:height")}
 							margin="dense"
 							InputProps={{
 								startAdornment: (
@@ -132,6 +140,7 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 							value={field.value}
 							onChange={(e) => {
 								const value = parseNumberValue(e.target.value);
+								// @ts-ignore
 								field.onChange(value);
 							}}
 							error={!!fieldState.error}
@@ -139,10 +148,10 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 						/>;
 					}}
 					rules={{
-						required: "Обязательное поле",
+						required: t("common:@messages.fieldIsRequired"),
 						min: {
 							value: 100,
-							message: "Минимальная высота 100px"
+							message: t("editor:@messages.minHeight", {count: 100}),
 						},
 					}}
 				/>
@@ -152,14 +161,14 @@ const NewImageDialog: React.FC<NewImageDialogProps> = (
 			<Button variant={"text"} onClick={() => {
 				onClose({reset});
 			}}>
-				Отмена
+				{t("common:cancel")}
 			</Button>
 			<Button
 				variant={"contained"}
 				type={"submit"}
 				form={"resizeDialog"}
 			>
-				Создать
+				{t("common:create")}
 			</Button>
 		</DialogActions>
 	</Dialog>;

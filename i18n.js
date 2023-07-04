@@ -5,5 +5,11 @@ module.exports = {
 		"*": [
 			"common",
 		],
+		"/editor": [
+			"editor",
+		],
+		"/concepts": [
+			"learning",
+		],
 	}
 };
